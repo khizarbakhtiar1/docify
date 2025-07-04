@@ -53,7 +53,7 @@ export function Header() {
               </NavigationMenuLink>
               <NavigationMenuLink asChild>
                 <Link
-                  href="#contact"
+                  href="/contact"
                   className="group inline-flex h-9 w-max items-center justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground focus:outline-none dark:bg-gray-900 dark:text-white dark:hover:bg-primary dark:hover:text-primary-foreground dark:focus:bg-primary dark:focus:text-primary-foreground"
                   prefetch={false}
                 >
@@ -120,7 +120,7 @@ export function Header() {
                 <span>Plans</span>
               </Link>
               <Link
-                href="#contact"
+                href="/contact"
                 className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                 prefetch={false}
               >
