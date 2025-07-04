@@ -1,8 +1,13 @@
 import React from "react";
 import { InstituteDashboard } from "./InstituteDashboard";
+import { InstituteRoute } from "@/components/ProtectedRoute";
 
 const InstitutePanel = () => {
-  return <InstituteDashboard />;
+  return (
+    <InstituteRoute>
+      <InstituteDashboard />
+    </InstituteRoute>
+  );
 };
 
 export default InstitutePanel;

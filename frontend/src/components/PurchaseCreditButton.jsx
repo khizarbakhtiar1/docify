@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ethers, parseEther } from "ethers";
 import InstituteABI from "../../../frontend/artifacts/contracts/Institute.sol/Institute.json";
 
-const PurchaseCreditButton = ({ instituteAddress, planType }) => {
+const PurchaseCreditButton = ({ instituteAddress, planType, isPro = false }) => {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [error, setError] = useState(null);
 
@@ -60,14 +60,20 @@ const PurchaseCreditButton = ({ instituteAddress, planType }) => {
     <div className="space-y-4">
       <div className="gradient-card p-4 rounded-lg">
         <div className="text-center">
-          <div className="text-2xl font-bold text-blue-600">{plan.credits}</div>
+          <div className={`text-2xl font-bold ${
+            isPro ? 'text-purple-600' : 'text-blue-600'
+          }`}>{plan.credits}</div>
           <div className="text-sm text-gray-600">Credits</div>
           <div className="text-lg font-semibold mt-2">{plan.price} ETH</div>
         </div>
       </div>
       
       <Button
-        className="btn-gradient w-full"
+        className={`w-full ${
+          isPro 
+            ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white' 
+            : 'btn-gradient'
+        }`}
         onClick={purchaseCredits}
         disabled={isPurchasing || !instituteAddress}
       >

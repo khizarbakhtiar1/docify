@@ -1,11 +1,14 @@
 import React from "react";
 import { HigherAuthorityDashboard } from "./HigherAuthorityDashboard";
+import { HigherAuthorityRoute } from "@/components/ProtectedRoute";
 
 const HighAuthPanel = () => {
   return (
-    <div className="">
-      <HigherAuthorityDashboard />
-    </div>
+    <HigherAuthorityRoute>
+      <div className="">
+        <HigherAuthorityDashboard />
+      </div>
+    </HigherAuthorityRoute>
   );
 };
 

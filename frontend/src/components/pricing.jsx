@@ -23,151 +23,142 @@ export function Pricing() {
     fetchInstituteAddress();
   }, []);
 
+  const plans = [
+    {
+      name: "Basic",
+      price: "$49",
+      period: "/ month",
+      description: "Perfect for small institutions",
+      credits: "100 Credits included",
+      costPerCredit: "$0.49 per credit",
+      features: ["Email support", "Basic analytics"],
+      planType: 1,
+      gradient: "text-blue-600",
+      popular: false
+    },
+    {
+      name: "Pro",
+      price: "$199",
+      period: "/ month",
+      description: "Ideal for growing institutions",
+      credits: "500 Credits included",
+      costPerCredit: "$0.40 per credit",
+      features: ["Priority support", "Advanced analytics", "API access"],
+      planType: 2,
+      gradient: "text-purple-600",
+      popular: true
+    },
+    {
+      name: "Enterprise",
+      price: "$449",
+      period: "/ month",
+      description: "For large institutions",
+      credits: "1,500 Credits included",
+      costPerCredit: "$0.30 per credit",
+      features: ["24/7 support", "Custom integrations", "Dedicated account manager"],
+      planType: 3,
+      gradient: "text-blue-600",
+      popular: false
+    }
+  ];
+
   return (
-    <section className="py-16 md:py-24 lg:py-32 gradient-background">
+    <section className="py-12 md:py-16 lg:py-20 gradient-background min-h-screen">
       <div className="container px-4 md:px-6">
-        <div className="text-center space-y-6 mb-12">
-          <h2 className="text-responsive-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        {/* Header */}
+        <div className="text-center space-y-6 mb-16 md:mb-20">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
             Choose Your Plan
           </h2>
-          <p className="text-responsive-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
             Select the perfect plan for your document verification needs. All plans include secure blockchain verification and instant results.
           </p>
         </div>
 
+        {/* Error Message */}
         {errorMessage && (
           <div className="text-red-500 text-center mb-8 p-4 bg-red-50 rounded-lg">
             {errorMessage}
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-8 max-w-6xl mx-auto">
-          {/* Basic Plan */}
-          <div className="gradient-card p-8 rounded-xl hover-lift">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Basic</h3>
-              <div className="mb-4">
-                <span className="text-4xl font-bold text-blue-600">$49</span>
-                <span className="text-gray-600">/ month</span>
-              </div>
-              <div className="text-sm text-gray-500 mb-6">Perfect for small institutions</div>
-            </div>
-            
-            <ul className="space-y-4 mb-8">
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">100 Credits included</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">$0.49 per credit</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">Email support</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">Basic analytics</span>
-              </li>
-            </ul>
-            
-            <PurchaseCreditButton
-              instituteAddress={instituteAddress}
-              planType={1}
-            />
-          </div>
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3 mt-4 lg:gap-10 max-w-7xl mx-auto">
+          {plans.map((plan, index) => (
+            <div
+              key={index}
+              className={`relative p-6 md:p-8 rounded-xl hover-lift h-full flex flex-col ${
+                plan.popular 
+                  ? 'bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 shadow-lg' 
+                  : 'gradient-card'
+              }`}
+            >
+              {/* Popular Badge */}
+              {plan.popular && (
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium">
+                    Most Popular
+                  </span>
+                </div>
+              )}
 
-          {/* Pro Plan */}
-          <div className="relative gradient-card p-8 rounded-xl hover-lift border-2 border-purple-300">
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-sm font-medium">
-                Most Popular
-              </span>
-            </div>
-            
-            <div className="text-center mb-8 pt-4">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Pro</h3>
-              <div className="mb-4">
-                <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">$199</span>
-                <span className="text-gray-600">/ month</span>
+              {/* Header */}
+              <div className={`text-center mb-6 ${plan.popular ? 'pt-6' : ''}`}>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">{plan.name}</h3>
+                <div className="mb-4">
+                  <span className={`text-4xl font-bold ${plan.gradient}`}>{plan.price}</span>
+                  <span className="text-gray-600">{plan.period}</span>
+                </div>
+                <div className="text-sm text-gray-500 mb-4">{plan.description}</div>
               </div>
-              <div className="text-sm text-gray-500 mb-6">Ideal for growing institutions</div>
-            </div>
-            
-            <ul className="space-y-4 mb-8">
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">500 Credits included</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">$0.40 per credit</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">Priority support</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">Advanced analytics</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">API access</span>
-              </li>
-            </ul>
-            
-            <PurchaseCreditButton
-              instituteAddress={instituteAddress}
-              planType={2}
-            />
-          </div>
 
-          {/* Enterprise Plan */}
-          <div className="gradient-card p-8 rounded-xl hover-lift">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Enterprise</h3>
-              <div className="mb-4">
-                <span className="text-4xl font-bold text-indigo-600">$449</span>
-                <span className="text-gray-600">/ month</span>
+              {/* Features - This will grow to fill available space */}
+              <div className="flex-1 flex flex-col">
+                <ul className="space-y-3">
+                  {/* Credits */}
+                  <li className="flex items-center">
+                    <CheckIcon className={`text-white rounded-full mr-3 p-1 w-5 h-5 flex-shrink-0 ${
+                      plan.popular ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-green-500'
+                    }`} />
+                    <span className="text-gray-700 font-bold">{plan.credits}</span>
+                  </li>
+                  
+                  {/* Cost per credit */}
+                  <li className="flex items-center">
+                    <CheckIcon className={`text-white rounded-full mr-3 p-1 w-5 h-5 flex-shrink-0 ${
+                      plan.popular ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-green-500'
+                    }`} />
+                    <span className="text-gray-700 font-bold">{plan.costPerCredit}</span>
+                  </li>
+                  
+                  {/* Additional features */}
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-center">
+                      <CheckIcon className={`text-white rounded-full mr-3 p-1 w-5 h-5 flex-shrink-0 ${
+                        plan.popular ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-green-500'
+                      }`} />
+                      <span className="text-gray-700 font-bold">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="text-sm text-gray-500 mb-6">For large institutions</div>
+
+              {/* Button - Fixed at bottom */}
+              <div className="pt-8">
+                <PurchaseCreditButton
+                  instituteAddress={instituteAddress}
+                  planType={plan.planType}
+                  isPro={plan.popular}
+                />
+              </div>
             </div>
-            
-            <ul className="space-y-4 mb-8">
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">1,500 Credits included</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">$0.30 per credit</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">24/7 support</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">Custom integrations</span>
-              </li>
-              <li className="flex items-center">
-                <CheckIcon className="text-white bg-green-500 rounded-full mr-3 p-1 w-5 h-5" />
-                <span className="text-gray-700">Dedicated account manager</span>
-              </li>
-            </ul>
-            
-            <PurchaseCreditButton
-              instituteAddress={instituteAddress}
-              planType={3}
-            />
-          </div>
+          ))}
         </div>
 
-        <div className="text-center mt-12">
-          <p className="text-gray-600 mb-4">Need a custom solution?</p>
-          <Button className="btn-gradient">Contact Sales</Button>
+        {/* Contact Sales */}
+        <div className="text-center mt-8">
+          <p className="text-gray-600 mb-6">Need a custom solution?</p>
+          <Button className="btn-gradient text-white px-8 py-3">Contact Sales</Button>
         </div>
       </div>
     </section>
@@ -191,4 +182,4 @@ function CheckIcon(props) {
       <path d="M20 6 9 17l-5-5" />
     </svg>
   );
-}
+} 

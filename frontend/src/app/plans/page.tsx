@@ -3,7 +3,7 @@ import { Pricing } from "../../components/pricing.jsx";
 
 const Plans = () => {
   return (
-    <div className="p-5">
+    <div className="min-h-screen pt-16">
       <Pricing />
     </div>
   );

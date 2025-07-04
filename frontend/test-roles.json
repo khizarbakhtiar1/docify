@@ -1,0 +1,54 @@
+{
+  "roles": {
+    "super-admin": {
+      "description": "Contract owner with full admin access",
+      "route": "/admin",
+      "mockData": {
+        "role": "super-admin",
+        "isApproved": true
+      }
+    },
+    "admin": {
+      "description": "Admin who can manage higher authorities",
+      "route": "/admin",
+      "mockData": {
+        "role": "admin",
+        "isApproved": true
+      }
+    },
+    "higher-authority": {
+      "description": "Educational authority that manages institutes",
+      "route": "/higher-authority",
+      "mockData": {
+        "role": "higher-authority",
+        "isApproved": true,
+        "authorityName": "Test University Board"
+      }
+    },
+    "institute": {
+      "description": "Educational institution that issues documents",
+      "route": "/institute",
+      "mockData": {
+        "role": "institute",
+        "isApproved": true,
+        "instituteName": "Test University"
+      }
+    },
+    "unregistered": {
+      "description": "Connected wallet not registered in any role",
+      "route": "/register",
+      "mockData": {
+        "role": "unregistered",
+        "isApproved": false
+      }
+    },
+    "user": {
+      "description": "Regular user who can verify documents",
+      "route": "/verify",
+      "mockData": {
+        "role": "user",
+        "isApproved": false
+      }
+    }
+  }
+}

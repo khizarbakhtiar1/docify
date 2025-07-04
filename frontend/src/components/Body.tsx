@@ -5,13 +5,10 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 export function Body() {
   return (
     <div className="w-full">
-      {/* Hero Section - Modern Gradient */}
-      <section className="w-full py-20 md:py-28 lg:py-36 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
+      {/* Hero Section - Clean Gradient */}
+      <section className="w-full py-20 md:py-28 lg:py-36 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-pink-400/10"></div>
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-100/30 to-purple-100/30"></div>
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/5 to-blue-600/10"></div>
         
         <div className="container px-4 md:px-6 grid md:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
           <div className="space-y-8 animate-slide-up">
@@ -23,7 +20,7 @@ export function Body() {
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
               Secure Digital
-              <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
                 Credential Verification
               </span>
             </h1>
@@ -36,13 +33,13 @@ export function Body() {
             {/* Stats Row */}
             <div className="flex items-center space-x-8 text-sm text-gray-600">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xs">1M+</span>
                 </div>
                 <span>Documents Verified</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xs">99%</span>
                 </div>
                 <span>Accuracy Rate</span>
@@ -52,7 +49,7 @@ export function Body() {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center h-12 px-8 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="inline-flex items-center justify-center h-12 px-8 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 prefetch={false}
               >
                 <span>Start Verification</span>
@@ -132,7 +129,7 @@ export function Body() {
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
               Why Choose 
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Docify</span>
+              <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"> Docify</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Experience the future of document verification with our cutting-edge blockchain technology, 
@@ -142,8 +139,8 @@ export function Body() {
           
           {/* Feature Grid */}
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-            <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-2xl border border-blue-100 hover:shadow-lg transition-all duration-300 animate-slide-up">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <div className="group bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl border border-blue-200 hover:shadow-lg transition-all duration-300 animate-slide-up">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <UploadIcon className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Instant Upload</h3>
@@ -153,8 +150,8 @@ export function Body() {
               </p>
             </div>
             
-            <div className="group bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-2xl border border-purple-100 hover:shadow-lg transition-all duration-300 animate-slide-up" style={{animationDelay: '0.1s'}}>
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <div className="group bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl border border-gray-200 hover:shadow-lg transition-all duration-300 animate-slide-up" style={{animationDelay: '0.1s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-gray-600 to-gray-700 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <BadgeCheckIcon className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Blockchain Verification</h3>
@@ -164,8 +161,8 @@ export function Body() {
               </p>
             </div>
             
-            <div className="group bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border border-green-100 hover:shadow-lg transition-all duration-300 animate-slide-up" style={{animationDelay: '0.2s'}}>
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+            <div className="group bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-2xl border border-green-200 hover:shadow-lg transition-all duration-300 animate-slide-up" style={{animationDelay: '0.2s'}}>
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                 <ShareIcon className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Global Recognition</h3>
@@ -184,7 +181,7 @@ export function Body() {
           <div className="text-center space-y-6">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
               Built on
-              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"> Advanced Technology</span>
+              <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"> Advanced Technology</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Our platform leverages cutting-edge technologies to provide the most secure, 
@@ -194,7 +191,7 @@ export function Body() {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300 text-center">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <LockIcon className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Blockchain Security</h3>
@@ -202,7 +199,7 @@ export function Body() {
             </div>
             
             <div className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300 text-center">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <ClockIcon className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Real-time Processing</h3>
@@ -210,7 +207,7 @@ export function Body() {
             </div>
             
             <div className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300 text-center">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-gray-600 to-gray-700 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <FileIcon className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Smart Contracts</h3>
@@ -218,7 +215,7 @@ export function Body() {
             </div>
             
             <div className="bg-white p-6 rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300 text-center">
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <ImportIcon className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">API Integration</h3>
@@ -234,7 +231,7 @@ export function Body() {
           <div className="text-center space-y-6">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
               Trusted by
-              <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent"> Industry Leaders</span>
+              <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"> Industry Leaders</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Join thousands of satisfied users who rely on Docify for secure, instant credential verification.
@@ -243,23 +240,23 @@ export function Body() {
           
           {/* Enhanced Stats */}
           <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-2xl border border-blue-100">
-              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">1.2M+</div>
+            <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl border border-blue-200">
+              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">1.2M+</div>
               <p className="text-gray-600 font-medium">Documents Verified</p>
               <p className="text-sm text-gray-500 mt-1">This month: +15,000</p>
             </div>
-            <div className="text-center bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border border-green-100">
-              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">500+</div>
+            <div className="text-center bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-2xl border border-green-200">
+              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent mb-2">500+</div>
               <p className="text-gray-600 font-medium">Partner Institutions</p>
               <p className="text-sm text-gray-500 mt-1">Across 50+ countries</p>
             </div>
-            <div className="text-center bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-2xl border border-purple-100">
-              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">99.9%</div>
+            <div className="text-center bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl border border-gray-200">
+              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-700 to-gray-900 bg-clip-text text-transparent mb-2">99.9%</div>
               <p className="text-gray-600 font-medium">Accuracy Rate</p>
               <p className="text-sm text-gray-500 mt-1">Industry leading</p>
             </div>
-            <div className="text-center bg-gradient-to-br from-orange-50 to-red-50 p-8 rounded-2xl border border-orange-100">
-              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">&lt;3s</div>
+            <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl border border-blue-200">
+              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-2">&lt;3s</div>
               <p className="text-gray-600 font-medium">Average Verification</p>
               <p className="text-sm text-gray-500 mt-1">Lightning fast</p>
             </div>
@@ -339,8 +336,8 @@ export function Body() {
         </div>
       </section>
 
-      {/* Call to Action - Modern Design */}
-      <section className="w-full py-20 md:py-28 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden">
+      {/* Call to Action - Clean Design */}
+      <section className="w-full py-20 md:py-28 bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-blue-100/10"></div>
         </div>

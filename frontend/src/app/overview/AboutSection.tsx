@@ -5,8 +5,8 @@ export function AboutSection() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="w-full py-20 md:py-28 lg:py-36 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-pink-400/10"></div>
+      <section className="w-full py-20 md:py-28 lg:py-36 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/5 to-blue-600/10"></div>
         <div className="container px-4 md:px-6 relative z-10">
           <div className="text-center space-y-8 max-w-4xl mx-auto">
             <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm border border-blue-200/50 rounded-full px-6 py-3 text-sm font-medium text-blue-700">
@@ -14,7 +14,7 @@ export function AboutSection() {
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
               Revolutionizing Document
-              <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
                 Verification Worldwide
               </span>
             </h1>
@@ -46,8 +46,8 @@ export function AboutSection() {
               </div>
               
               <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-100">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mb-4">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
@@ -56,8 +56,8 @@ export function AboutSection() {
                   <p className="text-sm text-gray-600">Building unbreakable trust through blockchain verification</p>
                 </div>
                 
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-100">
-                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mb-4">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border border-green-200">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center mb-4">
                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
                     </svg>
@@ -73,19 +73,19 @@ export function AboutSection() {
                 <h3 className="text-2xl font-bold text-gray-900">Our Impact</h3>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="text-center">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">1.2M+</div>
+                    <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">1.2M+</div>
                     <p className="text-sm text-gray-600">Documents Verified</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">500+</div>
+                    <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">500+</div>
                     <p className="text-sm text-gray-600">Partner Institutions</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">50+</div>
+                    <div className="text-3xl font-bold bg-gradient-to-r from-gray-700 to-gray-900 bg-clip-text text-transparent">50+</div>
                     <p className="text-sm text-gray-600">Countries Served</p>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">99.9%</div>
+                    <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">99.9%</div>
                     <p className="text-sm text-gray-600">Accuracy Rate</p>
                   </div>
                 </div>
@@ -101,7 +101,7 @@ export function AboutSection() {
           <div className="text-center space-y-6">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
               How Docify
-              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent"> Works</span>
+              <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"> Works</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Our blockchain-based verification process ensures authenticity and integrity of digital documents 
@@ -112,7 +112,7 @@ export function AboutSection() {
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             <div className="relative">
               <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 hover:shadow-xl transition-all duration-300">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-6 mx-auto">
                   <UploadIcon className="w-8 h-8 text-white" />
                 </div>
                 <div className="text-center space-y-4">
@@ -127,11 +127,11 @@ export function AboutSection() {
             
             <div className="relative">
               <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 hover:shadow-xl transition-all duration-300">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                <div className="w-16 h-16 bg-gradient-to-r from-gray-600 to-gray-700 rounded-xl flex items-center justify-center mb-6 mx-auto">
                   <LockIcon className="w-8 h-8 text-white" />
                 </div>
                 <div className="text-center space-y-4">
-                  <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold mx-auto">2</div>
+                  <div className="w-8 h-8 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center text-sm font-bold mx-auto">2</div>
                   <h3 className="text-xl font-semibold text-gray-900">Blockchain Verification</h3>
                   <p className="text-gray-600 leading-relaxed">
                     Advanced blockchain technology creates immutable, tamper-proof records with cryptographic verification and distributed consensus.
@@ -142,7 +142,7 @@ export function AboutSection() {
             
             <div className="relative">
               <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-200 hover:shadow-xl transition-all duration-300">
-                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-6 mx-auto">
                   <CheckIcon className="w-8 h-8 text-white" />
                 </div>
                 <div className="text-center space-y-4">
@@ -164,7 +164,7 @@ export function AboutSection() {
           <div className="text-center space-y-6">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
               Advanced
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"> Technology Stack</span>
+              <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"> Technology Stack</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               Built on cutting-edge blockchain infrastructure with enterprise-grade security and scalability.
@@ -172,8 +172,8 @@ export function AboutSection() {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center bg-gradient-to-br from-blue-50 to-indigo-50 p-8 rounded-2xl border border-blue-100">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-6">
+            <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl border border-blue-100">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4z" />
                 </svg>
@@ -182,8 +182,8 @@ export function AboutSection() {
               <p className="text-gray-600 text-sm">Secure, decentralized network with smart contract automation</p>
             </div>
             
-            <div className="text-center bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-2xl border border-purple-100">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mx-auto mb-6">
+            <div className="text-center bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl border border-gray-200">
+              <div className="w-16 h-16 bg-gradient-to-r from-gray-600 to-gray-700 rounded-xl flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
                 </svg>
@@ -192,8 +192,8 @@ export function AboutSection() {
               <p className="text-gray-600 text-sm">Distributed file storage with content addressing and redundancy</p>
             </div>
             
-            <div className="text-center bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl border border-green-100">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-6">
+            <div className="text-center bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-2xl border border-green-200">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
                 </svg>
@@ -202,8 +202,8 @@ export function AboutSection() {
               <p className="text-gray-600 text-sm">Military-grade AES-256 encryption with zero-knowledge architecture</p>
             </div>
             
-            <div className="text-center bg-gradient-to-br from-orange-50 to-red-50 p-8 rounded-2xl border border-orange-100">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-6">
+            <div className="text-center bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-2xl border border-blue-200">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
                 </svg>
@@ -221,7 +221,7 @@ export function AboutSection() {
           <div className="text-center space-y-6">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
               Meet Our
-              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"> Team</span>
+              <span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"> Team</span>
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
               The brilliant minds behind Docify's mission to revolutionize document verification worldwide.
@@ -351,7 +351,7 @@ export function AboutSection() {
       </section>
 
       {/* Call to Action */}
-      <section className="w-full py-20 md:py-28 bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden">
+      <section className="w-full py-20 md:py-28 bg-gradient-to-br from-blue-600 to-blue-800 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-blue-100/10"></div>
         </div>

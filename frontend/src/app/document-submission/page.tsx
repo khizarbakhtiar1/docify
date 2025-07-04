@@ -1,10 +1,12 @@
 import React from "react";
 import { DocumentSubmissionForm } from "./DocumentSubmissionForm";
+import { PublicRoute } from "@/components/ProtectedRoute";
+
 const DocumentSubmission = () => {
   return (
-    <div className="p-14 px-8">
+    <PublicRoute>
       <DocumentSubmissionForm />
-    </div>
+    </PublicRoute>
   );
 };
 

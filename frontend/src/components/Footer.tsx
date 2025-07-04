@@ -143,7 +143,7 @@ export function Footer() {
         </div>
         <div className="mt-12 sm:mt-16 flex justify-center">
           <Button
-            className="flex items-center space-x-2"
+            className="btn-gradient flex items-center space-x-2 hover-lift shadow-lg"
             onClick={() => {
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}

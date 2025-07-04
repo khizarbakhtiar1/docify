@@ -5,9 +5,9 @@ import Link from "next/link";
 const SubmitDocumentButton = () => {
   return (
     <div>
-      <Button className="h-8 gap-2 text-sm">
+      <Button className="btn-gradient h-8 gap-2 text-sm hover-lift">
         <PlusIcon className="h-4 w-4" />
-        <Link href="/document-submission">Submit Document Request</Link>
+        <Link href="/document-submission">Submit Document</Link>
       </Button>
     </div>
   );

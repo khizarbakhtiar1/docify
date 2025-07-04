@@ -49,8 +49,20 @@ const DocumentApprovalButton = () => {
 
   return (
     <div>
-      <Button onClick={handleApprove} disabled={loading} size="sm">
-        {loading ? "Approving..." : "Approve"}
+      <Button onClick={handleApprove} disabled={loading} size="sm" className="btn-gradient hover-lift">
+        {loading ? (
+          <div className="flex items-center">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            Approving...
+          </div>
+        ) : (
+          <div className="flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+            </svg>
+            Approve
+          </div>
+        )}
       </Button>
       {error && <p className="text-red-500">{error}</p>}
       {success && <p className="text-green-500">{success}</p>}
