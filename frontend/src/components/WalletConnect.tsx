@@ -11,14 +11,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 
 export function WalletConnect() {
-  const { 
-    isConnected, 
-    address, 
-    user, 
-    isLoading, 
-    connectWallet, 
-    disconnectWallet, 
-    error 
+  const {
+    isConnected,
+    address,
+    user,
+    isLoading,
+    connectWallet,
+    disconnectWallet,
+    error,
   } = useAuth();
 
   const formatAddress = (addr: string) => {
@@ -27,36 +27,36 @@ export function WalletConnect() {
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
-      case 'super-admin':
-        return 'Super Admin';
-      case 'admin':
-        return 'Admin';
-      case 'higher-authority':
-        return 'Higher Authority';
-      case 'institute':
-        return 'Institute';
-      case 'unregistered':
-        return 'Unregistered';
-      case 'user':
-        return 'User';
+      case "super-admin":
+        return "Super Admin";
+      case "admin":
+        return "Admin";
+      case "higher-authority":
+        return "Higher Authority";
+      case "institute":
+        return "Institute";
+      case "unregistered":
+        return "Unregistered";
+      case "user":
+        return "User";
       default:
-        return 'Unknown';
+        return "Unknown";
     }
   };
 
   const getRolePage = (role: string) => {
     switch (role) {
-      case 'super-admin':
-      case 'admin':
-        return '/admin';
-      case 'higher-authority':
-        return '/higher-authority';
-      case 'institute':
-        return '/institute';
-      case 'unregistered':
-        return '/register';
+      case "super-admin":
+      case "admin":
+        return "/admin";
+      case "higher-authority":
+        return "/higher-authority";
+      case "institute":
+        return "/institute";
+      case "unregistered":
+        return "/register";
       default:
-        return '/verify';
+        return "/verify";
     }
   };
 
@@ -74,7 +74,7 @@ export function WalletConnect() {
       <DropdownMenuTrigger asChild>
         <Button
           variant={isConnected ? "outline" : "default"}
-          onClick={isConnected ? undefined : connectWallet}
+          onClick={!isConnected ? connectWallet : undefined}
           className={`flex items-center gap-2 ${
             isConnected
               ? "bg-white text-black border border-black hover:bg-gray-200"
@@ -102,17 +102,31 @@ export function WalletConnect() {
           {user && (
             <>
               <div className="px-3 py-2 border-b">
-                <p className="text-sm font-medium">{getRoleDisplayName(user.role)}</p>
+                <p className="text-sm font-medium">
+                  {getRoleDisplayName(user.role)}
+                </p>
                 <p className="text-xs text-gray-500">
-                  {user.role === 'institute' && user.instituteName && user.instituteName}
-                  {user.role === 'higher-authority' && user.authorityName && user.authorityName}
-                  {!user.isApproved && (user.role === 'higher-authority' || user.role === 'institute') && 
-                    <span className="text-yellow-600"> (Pending Approval)</span>
-                  }
+                  {user.role === "institute" &&
+                    user.instituteName &&
+                    user.instituteName}
+                  {user.role === "higher-authority" &&
+                    user.authorityName &&
+                    user.authorityName}
+                  {!user.isApproved &&
+                    (user.role === "higher-authority" ||
+                      user.role === "institute") && (
+                      <span className="text-yellow-600">
+                        {" "}
+                        (Pending Approval)
+                      </span>
+                    )}
                 </p>
               </div>
               <DropdownMenuItem asChild>
-                <Link href={getRolePage(user.role)} className="flex items-center gap-2 w-full cursor-pointer">
+                <Link
+                  href={getRolePage(user.role)}
+                  className="flex items-center gap-2 w-full cursor-pointer"
+                >
                   <DashboardIcon className="h-4 w-4" />
                   <span>Go to Dashboard</span>
                 </Link>
@@ -120,7 +134,10 @@ export function WalletConnect() {
             </>
           )}
           <DropdownMenuItem asChild>
-            <Link href="/verify" className="flex items-center gap-2 w-full cursor-pointer">
+            <Link
+              href="/verify"
+              className="flex items-center gap-2 w-full cursor-pointer"
+            >
               <VerifyIcon className="h-4 w-4" />
               <span>Verify Documents</span>
             </Link>
@@ -241,4 +258,4 @@ function WalletIcon(props: React.SVGProps<SVGSVGElement>) {
       <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
     </svg>
   );
-} 
+}
