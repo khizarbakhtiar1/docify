@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardHeader,
@@ -21,87 +22,106 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { TransactionStatus } from "@/components/TransactionStatus";
+import { useAuth } from "@/contexts/AuthContext";
+import { useContractWrite } from "@/hooks/useContractWrite";
+import {
+  registerInstitute,
+  registerHigherAuthority,
+  getApprovedHigherAuthorities,
+} from "@/services";
 
 export function Register() {
-  const [walletAddress, setWalletAddress] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-  const [activeTab, setActiveTab] = useState("institute");
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    instituteType: "",
-    higherAuthority: "",
-    authorityType: "",
-    jurisdiction: "",
-  });
+  const router = useRouter();
+  const { isConnected, address, connectWallet, user, refreshUserData, isLoading: authLoading } = useAuth();
+  const { execute, state: txState, txHash, error: txError, reset: txReset } = useContractWrite();
 
+  const [activeTab, setActiveTab] = useState("institute");
+  const [instituteName, setInstituteName] = useState("");
+  const [authorityName, setAuthorityName] = useState("");
+  const [selectedAuthority, setSelectedAuthority] = useState("");
+  const [approvedAuthorities, setApprovedAuthorities] = useState([]);
+  const [loadingAuthorities, setLoadingAuthorities] = useState(false);
+  const [formError, setFormError] = useState(null);
+
+  // Fetch approved higher authorities for the institute dropdown
   useEffect(() => {
-    const fetchWalletAddress = async () => {
-      if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({
-            method: "eth_accounts",
-          });
-          if (accounts.length > 0) {
-            setWalletAddress(accounts[0]);
-            setIsConnected(true);
-          }
-        } catch (error) {
-          console.error("Error fetching wallet address:", error);
-        }
+    const fetchAuthorities = async () => {
+      setLoadingAuthorities(true);
+      try {
+        const authorities = await getApprovedHigherAuthorities();
+        setApprovedAuthorities(authorities);
+      } catch (err) {
+        console.error("Error fetching authorities:", err);
+        // Non-fatal — dropdown will be empty with a message
+      } finally {
+        setLoadingAuthorities(false);
       }
     };
-    fetchWalletAddress();
+    fetchAuthorities();
   }, []);
 
-  const connectWallet = async () => {
-    setIsLoading(true);
-    try {
-      if (window.ethereum) {
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-        const accounts = await window.ethereum.request({
-          method: "eth_accounts",
-        });
-        setWalletAddress(accounts[0]);
-        setIsConnected(true);
-      } else {
-        alert("Please install MetaMask to connect your wallet");
+  // Redirect if already registered
+  useEffect(() => {
+    if (user && user.role !== "unregistered" && user.role !== "user") {
+      const rolePages = {
+        "super-admin": "/admin",
+        admin: "/admin",
+        "higher-authority": "/higher-authority",
+        institute: "/institute",
+      };
+      const target = rolePages[user.role];
+      if (target) {
+        router.push(target);
       }
-    } catch (error) {
-      console.error("Error connecting wallet:", error);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [user, router]);
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmitInstitute = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      // TODO: Will be replaced with actual blockchain calls in Step 4
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      alert(`Registration successful! Welcome to Docify as a ${activeTab === "institute" ? "Institute" : "Higher Authority"}.`);
-      window.location.href = "/";
-    } catch (error) {
-      console.error("Registration error:", error);
-      alert("Registration failed. Please try again.");
-    } finally {
-      setIsLoading(false);
+    setFormError(null);
+
+    if (!instituteName.trim() || instituteName.trim().length < 3) {
+      setFormError("Institute name must be at least 3 characters.");
+      return;
+    }
+    if (!selectedAuthority) {
+      setFormError("Please select a Higher Authority.");
+      return;
+    }
+
+    const receipt = await execute(() =>
+      registerInstitute(instituteName.trim(), selectedAuthority)
+    );
+
+    if (receipt) {
+      // Refresh role — user is now a pending institute
+      await refreshUserData();
     }
   };
 
-  const isFormValid = () => {
-    return formData.name && formData.email && walletAddress && 
-           (activeTab === "institute" ? 
-             (formData.instituteType && formData.higherAuthority) : 
-             (formData.authorityType && formData.jurisdiction));
+  const handleSubmitAuthority = async (e) => {
+    e.preventDefault();
+    setFormError(null);
+
+    if (!authorityName.trim() || authorityName.trim().length < 3) {
+      setFormError("Authority name must be at least 3 characters.");
+      return;
+    }
+
+    const receipt = await execute(() =>
+      registerHigherAuthority(authorityName.trim())
+    );
+
+    if (receipt) {
+      // Refresh role — user is now a pending higher authority
+      await refreshUserData();
+    }
+  };
+
+  const truncateAddress = (addr) => {
+    if (!addr) return "";
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
   return (
@@ -113,7 +133,8 @@ export function Register() {
               Join Docify
             </h1>
             <p className="subheading-muted">
-              Register as an educational institute or higher authority to start issuing and verifying digital credentials
+              Register as an educational institute or higher authority to start
+              issuing and verifying digital credentials on the blockchain
             </p>
           </div>
 
@@ -123,7 +144,7 @@ export function Register() {
                 Create Your Account
               </CardTitle>
               <CardDescription className="text-gray-600">
-                Choose your role and complete the registration process
+                Choose your role and complete the on-chain registration
               </CardDescription>
             </CardHeader>
 
@@ -131,23 +152,34 @@ export function Register() {
               {!isConnected ? (
                 <div className="text-center py-12 animate-fade-in">
                   <div className="w-20 h-20 mx-auto bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-6 animate-pulse-soft">
-                    <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v13z"/>
-                      <path d="M7 10h10v4H7z"/>
+                    <svg
+                      className="w-10 h-10 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 013 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 013 6v3"
+                      />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Connect Your Wallet</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    Connect Your Wallet
+                  </h3>
                   <p className="text-gray-600 mb-6">
-                    Connect your wallet to complete the registration process securely
+                    Connect your wallet to register on the blockchain
                   </p>
-                  <Button 
+                  <Button
                     onClick={connectWallet}
-                    disabled={isLoading}
+                    disabled={authLoading}
                     className="btn-gradient px-8 py-3"
                   >
-                    {isLoading ? (
+                    {authLoading ? (
                       <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                         Connecting...
                       </div>
                     ) : (
@@ -157,9 +189,23 @@ export function Register() {
                 </div>
               ) : (
                 <div className="animate-slide-up">
+                  {/* Already registered notice */}
+                  {user && user.role !== "unregistered" && user.role !== "user" && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl mb-6">
+                      <p className="text-sm text-blue-800">
+                        You are already registered as <strong>{user.role}</strong>.
+                        {!user.isApproved && " Your registration is pending approval."}
+                      </p>
+                    </div>
+                  )}
+
                   <Tabs
                     value={activeTab}
-                    onValueChange={setActiveTab}
+                    onValueChange={(val) => {
+                      setActiveTab(val);
+                      setFormError(null);
+                      txReset();
+                    }}
                     className="w-full"
                   >
                     <TabsList className="grid w-full grid-cols-2 mb-8">
@@ -171,208 +217,266 @@ export function Register() {
                       </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="institute" className="space-y-6 animate-fade-in">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* ── Institute Registration Tab ────────────────── */}
+                    <TabsContent
+                      value="institute"
+                      className="space-y-6 animate-fade-in"
+                    >
+                      <form onSubmit={handleSubmitInstitute} className="space-y-6">
                         <div className="space-y-2">
-                          <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                          <Label
+                            htmlFor="inst-name"
+                            className="text-sm font-medium text-gray-700"
+                          >
                             Institution Name *
                           </Label>
                           <Input
-                            id="name"
+                            id="inst-name"
                             placeholder="Enter institution name"
-                            value={formData.name}
-                            onChange={(e) => handleInputChange("name", e.target.value)}
+                            value={instituteName}
+                            onChange={(e) => setInstituteName(e.target.value)}
                             className="input-modern"
+                            minLength={3}
+                            required
                           />
+                          <p className="text-xs text-gray-500">
+                            This name will be stored on the blockchain and cannot be changed.
+                          </p>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                            Official Email *
-                          </Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            placeholder="institution@domain.edu"
-                            value={formData.email}
-                            onChange={(e) => handleInputChange("email", e.target.value)}
-                            className="input-modern"
-                          />
-                        </div>
-                      </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="wallet" className="text-sm font-medium text-gray-700">
-                          Wallet Address
-                        </Label>
-                        <div className="relative">
-                          <Input 
-                            id="wallet" 
-                            value={walletAddress} 
-                            readOnly 
-                            className="input-modern font-mono text-sm pr-12"
-                          />
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse-soft"></div>
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="wallet"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Wallet Address
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              id="wallet"
+                              value={address || ""}
+                              readOnly
+                              className="input-modern font-mono text-sm pr-12"
+                            />
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse-soft" />
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="institute-type" className="text-sm font-medium text-gray-700">
-                            Institution Type *
-                          </Label>
-                          <Select 
-                            value={formData.instituteType}
-                            onValueChange={(value) => handleInputChange("instituteType", value)}
+                          <Label
+                            htmlFor="higher-authority"
+                            className="text-sm font-medium text-gray-700"
                           >
-                            <SelectTrigger className="input-modern">
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="university">🎓 University</SelectItem>
-                              <SelectItem value="college">🏫 College</SelectItem>
-                              <SelectItem value="school">🏫 School</SelectItem>
-                              <SelectItem value="training">📚 Training Center</SelectItem>
-                              <SelectItem value="other">🏢 Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="higher-authority" className="text-sm font-medium text-gray-700">
                             Higher Authority *
                           </Label>
-                          <Select 
-                            value={formData.higherAuthority}
-                            onValueChange={(value) => handleInputChange("higherAuthority", value)}
-                          >
-                            <SelectTrigger className="input-modern">
-                              <SelectValue placeholder="Select authority" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="authority1">Ministry of Education</SelectItem>
-                              <SelectItem value="authority2">University Grants Commission</SelectItem>
-                              <SelectItem value="authority3">State Education Board</SelectItem>
-                              <SelectItem value="authority4">Accreditation Council</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          {loadingAuthorities ? (
+                            <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600" />
+                              <span className="text-sm text-gray-500">
+                                Loading authorities from blockchain...
+                              </span>
+                            </div>
+                          ) : approvedAuthorities.length === 0 ? (
+                            <div className="p-3 border border-yellow-200 rounded-lg bg-yellow-50">
+                              <p className="text-sm text-yellow-800">
+                                No approved Higher Authorities found on-chain. 
+                                An authority must be registered and approved before institutes can register.
+                              </p>
+                            </div>
+                          ) : (
+                            <Select
+                              value={selectedAuthority}
+                              onValueChange={setSelectedAuthority}
+                            >
+                              <SelectTrigger className="input-modern">
+                                <SelectValue placeholder="Select a Higher Authority" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {approvedAuthorities.map((auth) => (
+                                  <SelectItem
+                                    key={auth.address}
+                                    value={auth.address}
+                                  >
+                                    🏛️ {auth.authorityName} ({truncateAddress(auth.address)})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
                         </div>
-                      </div>
+
+                        {formError && (
+                          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-700">{formError}</p>
+                          </div>
+                        )}
+
+                        <TransactionStatus
+                          state={txState}
+                          txHash={txHash}
+                          error={txError}
+                          onRetry={() => {
+                            txReset();
+                            handleSubmitInstitute(new Event("submit"));
+                          }}
+                          onReset={txReset}
+                        />
+
+                        {txState === "success" ? (
+                          <div className="text-center p-4 bg-green-50 border border-green-200 rounded-xl">
+                            <p className="text-green-800 font-medium mb-2">
+                              🎉 Registration submitted!
+                            </p>
+                            <p className="text-sm text-green-600">
+                              Your institute is now pending approval from the selected Higher Authority.
+                              You will be notified once approved.
+                            </p>
+                          </div>
+                        ) : (
+                          <Button
+                            type="submit"
+                            disabled={
+                              txState === "confirming" ||
+                              txState === "pending" ||
+                              !instituteName.trim() ||
+                              !selectedAuthority ||
+                              approvedAuthorities.length === 0
+                            }
+                            className="btn-gradient w-full py-3 text-base font-medium"
+                          >
+                            {txState === "confirming" || txState === "pending" ? (
+                              <div className="flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3" />
+                                Processing...
+                              </div>
+                            ) : (
+                              "Register as Institute"
+                            )}
+                          </Button>
+                        )}
+                      </form>
                     </TabsContent>
 
-                    <TabsContent value="authority" className="space-y-6 animate-fade-in">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* ── Higher Authority Registration Tab ─────────── */}
+                    <TabsContent
+                      value="authority"
+                      className="space-y-6 animate-fade-in"
+                    >
+                      <form onSubmit={handleSubmitAuthority} className="space-y-6">
                         <div className="space-y-2">
-                          <Label htmlFor="auth-name" className="text-sm font-medium text-gray-700">
+                          <Label
+                            htmlFor="auth-name"
+                            className="text-sm font-medium text-gray-700"
+                          >
                             Authority Name *
                           </Label>
                           <Input
                             id="auth-name"
                             placeholder="Enter authority name"
-                            value={formData.name}
-                            onChange={(e) => handleInputChange("name", e.target.value)}
+                            value={authorityName}
+                            onChange={(e) => setAuthorityName(e.target.value)}
                             className="input-modern"
+                            minLength={3}
+                            required
                           />
+                          <p className="text-xs text-gray-500">
+                            This name will be stored on the blockchain and cannot be changed.
+                          </p>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="auth-email" className="text-sm font-medium text-gray-700">
-                            Official Email *
-                          </Label>
-                          <Input
-                            id="auth-email"
-                            type="email"
-                            placeholder="authority@gov.edu"
-                            value={formData.email}
-                            onChange={(e) => handleInputChange("email", e.target.value)}
-                            className="input-modern"
-                          />
-                        </div>
-                      </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="auth-wallet" className="text-sm font-medium text-gray-700">
-                          Wallet Address
-                        </Label>
-                        <div className="relative">
-                          <Input 
-                            id="auth-wallet" 
-                            value={walletAddress} 
-                            readOnly 
-                            className="input-modern font-mono text-sm pr-12"
-                          />
-                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse-soft"></div>
+                        <div className="space-y-2">
+                          <Label
+                            htmlFor="auth-wallet"
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Wallet Address
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              id="auth-wallet"
+                              value={address || ""}
+                              readOnly
+                              className="input-modern font-mono text-sm pr-12"
+                            />
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse-soft" />
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <Label htmlFor="authority-type" className="text-sm font-medium text-gray-700">
-                            Authority Type *
-                          </Label>
-                          <Select 
-                            value={formData.authorityType}
-                            onValueChange={(value) => handleInputChange("authorityType", value)}
+                        <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                          <h4 className="text-sm font-medium text-blue-800 mb-1">
+                            ℹ️ Approval Process
+                          </h4>
+                          <p className="text-xs text-blue-600">
+                            After registration, your application will need approval from 3
+                            platform admins before your Authority account is activated.
+                            You&apos;ll be able to manage institutes once approved.
+                          </p>
+                        </div>
+
+                        {formError && (
+                          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-700">{formError}</p>
+                          </div>
+                        )}
+
+                        <TransactionStatus
+                          state={txState}
+                          txHash={txHash}
+                          error={txError}
+                          onRetry={() => {
+                            txReset();
+                            handleSubmitAuthority(new Event("submit"));
+                          }}
+                          onReset={txReset}
+                        />
+
+                        {txState === "success" ? (
+                          <div className="text-center p-4 bg-green-50 border border-green-200 rounded-xl">
+                            <p className="text-green-800 font-medium mb-2">
+                              🎉 Registration submitted!
+                            </p>
+                            <p className="text-sm text-green-600">
+                              Your Higher Authority application has been submitted on-chain.
+                              It requires approval from 3 admins to be activated.
+                            </p>
+                          </div>
+                        ) : (
+                          <Button
+                            type="submit"
+                            disabled={
+                              txState === "confirming" ||
+                              txState === "pending" ||
+                              !authorityName.trim()
+                            }
+                            className="btn-gradient w-full py-3 text-base font-medium"
                           >
-                            <SelectTrigger className="input-modern">
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="government">🏛️ Government Body</SelectItem>
-                              <SelectItem value="accreditation">✅ Accreditation Council</SelectItem>
-                              <SelectItem value="regulatory">📋 Regulatory Authority</SelectItem>
-                              <SelectItem value="international">🌐 International Organization</SelectItem>
-                              <SelectItem value="other">🏢 Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="jurisdiction" className="text-sm font-medium text-gray-700">
-                            Jurisdiction *
-                          </Label>
-                          <Input
-                            id="jurisdiction"
-                            placeholder="e.g., National, State, Regional"
-                            value={formData.jurisdiction}
-                            onChange={(e) => handleInputChange("jurisdiction", e.target.value)}
-                            className="input-modern"
-                          />
-                        </div>
-                      </div>
+                            {txState === "confirming" || txState === "pending" ? (
+                              <div className="flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3" />
+                                Processing...
+                              </div>
+                            ) : (
+                              "Register as Higher Authority"
+                            )}
+                          </Button>
+                        )}
+                      </form>
                     </TabsContent>
                   </Tabs>
                 </div>
               )}
             </CardContent>
-
-            {isConnected && (
-              <CardFooter className="pt-0">
-                <form onSubmit={handleSubmit} className="w-full">
-                  <Button 
-                    type="submit" 
-                    disabled={isLoading || !isFormValid()}
-                    className="btn-gradient w-full py-3 text-base font-medium"
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                        Creating Account...
-                      </div>
-                    ) : (
-                      `Register as ${activeTab === "institute" ? "Institute" : "Higher Authority"}`
-                    )}
-                  </Button>
-                </form>
-              </CardFooter>
-            )}
           </Card>
 
           <div className="text-center mt-8 animate-slide-up">
             <p className="text-gray-600">
               Already registered?{" "}
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
               >
                 Go to Dashboard
@@ -381,15 +485,15 @@ export function Register() {
             <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="flex justify-center space-x-8 text-sm text-gray-500">
                 <span className="flex items-center">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2" />
                   Blockchain Secured
                 </span>
                 <span className="flex items-center">
-                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2" />
                   Instantly Verifiable
                 </span>
                 <span className="flex items-center">
-                  <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                  <span className="w-2 h-2 bg-purple-500 rounded-full mr-2" />
                   Globally Trusted
                 </span>
               </div>
