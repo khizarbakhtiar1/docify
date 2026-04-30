@@ -63,6 +63,11 @@ const config: HardhatUserConfig = {
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
   },
+  gasReporter: {
+    enabled: true,
+    currency: "USD",
+    coinmarketcap: process.env.COINMARKETCAP_API_KEY || "",
+  },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
