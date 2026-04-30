@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import NavigationBar from "@/components/NavigationBar";
 import { Footer } from "@/components/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,6 +31,7 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
+          <Toaster richColors position="top-right" />
         </AuthProvider>
       </body>
     </html>

@@ -33,6 +33,7 @@ import {
   rejectInstitute,
   parseContractError,
 } from "@/services";
+import { useContractWrite } from "@/hooks/useContractWrite";
 
 export function AdminDashboard() {
   const { user, address } = useAuth();
@@ -91,30 +92,24 @@ export function AdminDashboard() {
   const isSuperAdmin = address && owner &&
     address.toLowerCase() === owner.toLowerCase();
 
+  const { execute: executeWrite, isLoading: isWriting } = useContractWrite();
+
   const handleRejectAuthority = async (authorityAddr) => {
     setRejectingAddress(authorityAddr);
-    try {
-      const tx = await rejectHigherAuthority(authorityAddr);
-      await tx.wait();
-      await fetchData();
-    } catch (err) {
-      alert(parseContractError(err));
-    } finally {
-      setRejectingAddress(null);
-    }
+    const receipt = await executeWrite(() => rejectHigherAuthority(authorityAddr), {
+      successMessage: "Higher Authority rejected successfully",
+    });
+    setRejectingAddress(null);
+    if (receipt) await fetchData();
   };
 
   const handleRejectInstitute = async (instAddr) => {
     setRejectingAddress(instAddr);
-    try {
-      const tx = await rejectInstitute(instAddr);
-      await tx.wait();
-      await fetchData();
-    } catch (err) {
-      alert(parseContractError(err));
-    } finally {
-      setRejectingAddress(null);
-    }
+    const receipt = await executeWrite(() => rejectInstitute(instAddr), {
+      successMessage: "Institute rejected successfully",
+    });
+    setRejectingAddress(null);
+    if (receipt) await fetchData();
   };
 
   // ── Stats ─────────────────────────────────────────────────

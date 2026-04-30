@@ -1,35 +1,23 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { approveHigherAuthority, parseContractError } from "@/services";
+import { approveHigherAuthority } from "@/services";
+import { useContractWrite } from "@/hooks/useContractWrite";
 
 const HighAuthApprovalButton = ({ authorityAddress, onSuccess }) => {
-  const [isApproving, setIsApproving] = useState(false);
-  const [error, setError] = useState(null);
+  const { execute, isLoading } = useContractWrite();
 
   const handleApprove = async () => {
-    setIsApproving(true);
-    setError(null);
-    try {
-      const tx = await approveHigherAuthority(authorityAddress);
-      await tx.wait();
-      console.log("Higher Authority approved successfully");
-      if (onSuccess) onSuccess();
-    } catch (err) {
-      console.error("Error approving Higher Authority:", err);
-      setError(parseContractError(err));
-    } finally {
-      setIsApproving(false);
-    }
+    await execute(() => approveHigherAuthority(authorityAddress), {
+      successMessage: "Higher Authority approved successfully",
+    });
+    if (onSuccess) onSuccess();
   };
 
   return (
-    <div>
-      <Button onClick={handleApprove} disabled={isApproving}>
-        {isApproving ? "Approving..." : "Approve"}
-      </Button>
-      {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
-    </div>
+    <Button onClick={handleApprove} disabled={isLoading}>
+      {isLoading ? "Approving..." : "Approve"}
+    </Button>
   );
 };
 

@@ -33,6 +33,7 @@ import {
   revokeSoulBoundToken,
   parseContractError,
 } from "@/services";
+import { useContractWrite } from "@/hooks/useContractWrite";
 
 export function InstituteDashboard() {
   const { user, address } = useAuth();
@@ -48,7 +49,6 @@ export function InstituteDashboard() {
   // Submit document form
   const [showSubmitForm, setShowSubmitForm] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [submitLoading, setSubmitLoading] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -97,26 +97,30 @@ export function InstituteDashboard() {
   const approvedDocs = documents.filter((d) => d.isApproved);
 
   // ── Submit Document Handler ───────────────────────────────
+  const { execute: executeSubmit, isLoading: isSubmitting } = useContractWrite();
+  const { execute: executeRevoke, isLoading: isRevoking } = useContractWrite();
+
   const handleSubmitDocument = async (e) => {
     e.preventDefault();
     if (!selectedFile || !instituteContract) return;
 
-    setSubmitLoading(true);
     setSubmitError(null);
     setSubmitSuccess(false);
 
     try {
       const hash = await computeDocumentHash(selectedFile);
-      const tx = await submitDocumentRequest(instituteContract, hash);
-      await tx.wait();
-      setSubmitSuccess(true);
-      setSelectedFile(null);
-      setShowSubmitForm(false);
-      await fetchData();
+      const receipt = await executeSubmit(() => submitDocumentRequest(instituteContract, hash), {
+        successMessage: "Document submitted successfully",
+      });
+      
+      if (receipt) {
+        setSubmitSuccess(true);
+        setSelectedFile(null);
+        setShowSubmitForm(false);
+        await fetchData();
+      }
     } catch (err) {
-      setSubmitError(parseContractError(err));
-    } finally {
-      setSubmitLoading(false);
+      setSubmitError(err.message || "Failed to compute document hash");
     }
   };
 
@@ -124,15 +128,11 @@ export function InstituteDashboard() {
   const handleRevoke = async (tokenId) => {
     if (!instituteContract) return;
     setRevokingTokenId(tokenId);
-    try {
-      const tx = await revokeSoulBoundToken(instituteContract, tokenId);
-      await tx.wait();
-      await fetchData();
-    } catch (err) {
-      alert(parseContractError(err));
-    } finally {
-      setRevokingTokenId(null);
-    }
+    const receipt = await executeRevoke(() => revokeSoulBoundToken(instituteContract, tokenId), {
+      successMessage: "Token revoked successfully",
+    });
+    setRevokingTokenId(null);
+    if (receipt) await fetchData();
   };
 
   // ── Stats ─────────────────────────────────────────────────
@@ -298,10 +298,10 @@ export function InstituteDashboard() {
 
                     <Button
                       type="submit"
-                      disabled={submitLoading || !selectedFile}
+                      disabled={isSubmitting || !selectedFile}
                       className="btn-gradient"
                     >
-                      {submitLoading ? "Submitting..." : "Submit Document Hash"}
+                      {isSubmitting ? "Submitting..." : "Submit Document Hash"}
                     </Button>
                   </form>
                 )}

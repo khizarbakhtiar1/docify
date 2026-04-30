@@ -2,30 +2,28 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { isAddress } from "ethers";
-import { addAdmin, parseContractError } from "@/services";
+import { addAdmin } from "@/services";
+import { useContractWrite } from "@/hooks/useContractWrite";
 
 const AddAdminButton = ({ onSuccess }) => {
   const [newAdminAddress, setNewAdminAddress] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [localError, setLocalError] = useState(null);
+  const { execute, isLoading } = useContractWrite();
 
   const handleAddAdmin = async () => {
     if (!newAdminAddress.trim() || !isAddress(newAdminAddress)) {
-      setError("Please enter a valid Ethereum address");
+      setLocalError("Please enter a valid Ethereum address");
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-    try {
-      const tx = await addAdmin(newAdminAddress);
-      await tx.wait();
+    setLocalError(null);
+    const receipt = await execute(() => addAdmin(newAdminAddress), {
+      successMessage: "Admin added successfully",
+    });
+
+    if (receipt) {
       setNewAdminAddress("");
       if (onSuccess) onSuccess();
-    } catch (err) {
-      setError(parseContractError(err));
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -36,7 +34,7 @@ const AddAdminButton = ({ onSuccess }) => {
           className="flex-1 py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           type="text"
           value={newAdminAddress}
-          onChange={(e) => setNewAdminAddress(e.target.value)}
+          onChange={(e) => { setNewAdminAddress(e.target.value); setLocalError(null); }}
           placeholder="Enter Ethereum address (0x...)"
         />
         <Button
@@ -47,8 +45,8 @@ const AddAdminButton = ({ onSuccess }) => {
           {isLoading ? "Adding..." : "Add Admin"}
         </Button>
       </div>
-      {error && (
-        <p className="text-red-500 text-sm p-2 bg-red-50 rounded">{error}</p>
+      {localError && (
+        <p className="text-red-500 text-sm p-2 bg-red-50 rounded">{localError}</p>
       )}
     </div>
   );

@@ -1,32 +1,27 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { purchaseCredits, parseContractError, CreditPlan, PLAN_DETAILS } from "@/services";
+import { purchaseCredits, CreditPlan, PLAN_DETAILS } from "@/services";
+import { useContractWrite } from "@/hooks/useContractWrite";
 
 const PurchaseCreditButton = ({ instituteContract, planType, isPro = false, onSuccess }) => {
-  const [isPurchasing, setIsPurchasing] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
+  const [localError, setLocalError] = useState(null);
+  const { execute, isLoading, isSuccess } = useContractWrite();
 
   const handlePurchase = async () => {
     if (!instituteContract) {
-      setError("Institute contract not found");
+      setLocalError("Institute contract not found");
       return;
     }
 
-    setIsPurchasing(true);
-    setError(null);
-    setSuccess(false);
+    setLocalError(null);
 
-    try {
-      const tx = await purchaseCredits(instituteContract, planType);
-      await tx.wait();
-      setSuccess(true);
-      if (onSuccess) onSuccess();
-    } catch (err) {
-      setError(parseContractError(err));
-    } finally {
-      setIsPurchasing(false);
+    const receipt = await execute(() => purchaseCredits(instituteContract, planType), {
+      successMessage: "Credits purchased successfully!",
+    });
+
+    if (receipt && onSuccess) {
+      onSuccess();
     }
   };
 
@@ -54,18 +49,18 @@ const PurchaseCreditButton = ({ instituteContract, planType, isPro = false, onSu
             : 'btn-gradient'
         }`}
         onClick={handlePurchase}
-        disabled={isPurchasing || !instituteContract}
+        disabled={isLoading || !instituteContract}
       >
-        {isPurchasing ? "Processing..." : success ? "✓ Purchased!" : "Purchase Credits"}
+        {isLoading ? "Processing..." : isSuccess ? "✓ Purchased!" : "Purchase Credits"}
       </Button>
       
-      {error && (
+      {localError && (
         <div className="text-red-500 text-sm p-2 bg-red-50 rounded">
-          {error}
+          {localError}
         </div>
       )}
 
-      {success && (
+      {isSuccess && (
         <div className="text-green-600 text-sm p-2 bg-green-50 rounded text-center">
           ✓ Credits purchased successfully!
         </div>

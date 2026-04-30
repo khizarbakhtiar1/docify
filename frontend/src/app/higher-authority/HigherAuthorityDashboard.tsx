@@ -34,6 +34,7 @@ import {
   parseContractError,
 } from "@/services";
 import type { InstituteData, DocumentRequest } from "@/services";
+import { useContractWrite } from "@/hooks/useContractWrite";
 
 interface ExtendedDocRequest extends DocumentRequest {
   instituteEOA: string;
@@ -115,58 +116,44 @@ export function HigherAuthorityDashboard() {
   const truncate = (addr: string) =>
     addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "";
 
+  const { execute: executeWrite, isLoading: isWriting } = useContractWrite();
+
   const handleApproveInstitute = async (instAddr: string) => {
     setActionLoading(instAddr);
-    try {
-      const tx = await approveInstitute(instAddr);
-      await tx.wait();
-      await fetchData();
-    } catch (err) {
-      alert(parseContractError(err));
-    } finally {
-      setActionLoading(null);
-    }
+    const receipt = await executeWrite(() => approveInstitute(instAddr), {
+      successMessage: "Institute approved successfully",
+    });
+    setActionLoading(null);
+    if (receipt) await fetchData();
   };
 
   const handleRejectInstitute = async (instAddr: string) => {
     setActionLoading(`reject-${instAddr}`);
-    try {
-      const tx = await rejectInstitute(instAddr);
-      await tx.wait();
-      await fetchData();
-    } catch (err) {
-      alert(parseContractError(err));
-    } finally {
-      setActionLoading(null);
-    }
+    const receipt = await executeWrite(() => rejectInstitute(instAddr), {
+      successMessage: "Institute rejected successfully",
+    });
+    setActionLoading(null);
+    if (receipt) await fetchData();
   };
 
   const handleApproveDocument = async (instEOA: string, docHash: string) => {
     if (!authorityContractAddr) return;
     setActionLoading(`doc-approve-${docHash}`);
-    try {
-      const tx = await approveDocumentRequest(authorityContractAddr, instEOA, docHash);
-      await tx.wait();
-      await fetchData();
-    } catch (err) {
-      alert(parseContractError(err));
-    } finally {
-      setActionLoading(null);
-    }
+    const receipt = await executeWrite(() => approveDocumentRequest(authorityContractAddr, instEOA, docHash), {
+      successMessage: "Document approved successfully",
+    });
+    setActionLoading(null);
+    if (receipt) await fetchData();
   };
 
   const handleRejectDocument = async (instEOA: string, docHash: string) => {
     if (!authorityContractAddr) return;
     setActionLoading(`doc-reject-${docHash}`);
-    try {
-      const tx = await rejectDocumentRequest(authorityContractAddr, instEOA, docHash);
-      await tx.wait();
-      await fetchData();
-    } catch (err) {
-      alert(parseContractError(err));
-    } finally {
-      setActionLoading(null);
-    }
+    const receipt = await executeWrite(() => rejectDocumentRequest(authorityContractAddr, instEOA, docHash), {
+      successMessage: "Document rejected successfully",
+    });
+    setActionLoading(null);
+    if (receipt) await fetchData();
   };
 
   // ── Computed values ───────────────────────────────────────

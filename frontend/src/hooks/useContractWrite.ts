@@ -7,6 +7,7 @@
 import { useState, useCallback } from "react";
 import { ethers } from "ethers";
 import { parseContractError } from "@/services/contracts";
+import { toast } from "sonner";
 
 export type TransactionState =
   | "idle"
@@ -18,7 +19,8 @@ export type TransactionState =
 export interface UseContractWriteReturn {
   /** Execute a contract write function */
   execute: (
-    contractCall: () => Promise<ethers.ContractTransactionResponse>
+    contractCall: () => Promise<ethers.ContractTransactionResponse>,
+    options?: { successMessage?: string; loadingMessage?: string }
   ) => Promise<ethers.ContractTransactionReceipt | null>;
   /** Current state of the transaction */
   state: TransactionState;
@@ -49,21 +51,33 @@ export function useContractWrite(): UseContractWriteReturn {
 
   const execute = useCallback(
     async (
-      contractCall: () => Promise<ethers.ContractTransactionResponse>
+      contractCall: () => Promise<ethers.ContractTransactionResponse>,
+      options?: { successMessage?: string; loadingMessage?: string }
     ): Promise<ethers.ContractTransactionReceipt | null> => {
+      let toastId;
       try {
         setState("confirming");
         setError(null);
         setTxHash(null);
+
+        toastId = toast.loading("Please confirm the transaction in your wallet...");
 
         // User signs transaction in wallet
         const tx = await contractCall();
         setTxHash(tx.hash);
         setState("pending");
 
+        toast.loading(options?.loadingMessage || "Transaction submitted! Waiting for confirmation...", {
+          id: toastId,
+        });
+
         // Wait for transaction to be mined
         const receipt = await tx.wait();
         setState("success");
+
+        toast.success(options?.successMessage || "Transaction successful!", {
+          id: toastId,
+        });
 
         // Auto-reset after 5 seconds
         setTimeout(() => {
@@ -71,10 +85,18 @@ export function useContractWrite(): UseContractWriteReturn {
         }, 5000);
 
         return receipt;
-      } catch (err) {
+      } catch (err: any) {
         const message = parseContractError(err);
         setError(message);
         setState("error");
+        
+        // Handle user rejection (MetaMask error code 4001 or string match)
+        if (err?.code === 4001 || err?.message?.includes("user rejected")) {
+          toast.error("Transaction cancelled", { id: toastId });
+        } else {
+          toast.error(message, { id: toastId });
+        }
+        
         return null;
       }
     },
