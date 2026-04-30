@@ -118,35 +118,30 @@ export function DocumentVerificationForm() {
   };
 
   return (
-    <div className="min-h-screen gradient-background py-12 px-4">
-      <div className="container-custom">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8 animate-slide-up">
-            <h1 className="text-4xl font-bold heading-gradient mb-4">
+    <div className="w-full">
+      <div className="container px-4 md:px-6 mx-auto">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-bold tracking-tight mb-4">
               Document Verification
             </h1>
-            <p className="subheading-muted max-w-2xl mx-auto">
+            <p className="text-gray-500 text-lg max-w-lg mx-auto">
               Instantly verify the authenticity of any Soul Bound Token
-              credential by querying the blockchain directly
+              credential by querying the blockchain directly.
             </p>
           </div>
 
-          <Card className="glass-card shadow-2xl animate-scale-in">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-semibold text-gray-800 flex items-center justify-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mr-3">
-                  <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                  </svg>
-                </div>
+          <Card className="border border-gray-200 shadow-sm rounded-xl bg-white">
+            <CardHeader className="text-center border-b border-gray-100 pb-6">
+              <CardTitle className="text-xl font-semibold text-gray-900">
                 Verify On-Chain
               </CardTitle>
-              <CardDescription className="text-gray-600">
+              <CardDescription className="text-gray-500 mt-2">
                 Enter the institute address and SBT token ID to verify a credential
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 pt-6">
               <form className="space-y-6" onSubmit={handleVerify}>
                 <div className="space-y-3">
                   <Label htmlFor="inst-addr" className="text-sm font-medium text-gray-700">
@@ -205,20 +200,15 @@ export function DocumentVerificationForm() {
                 <Button
                   type="submit"
                   disabled={isVerifying || !tokenId.trim() || !instituteAddr.trim()}
-                  className="btn-gradient w-full py-4 text-lg font-medium"
+                  className="w-full bg-black hover:bg-gray-800 text-white font-medium py-2 rounded-md transition-colors"
                 >
                   {isVerifying ? (
                     <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3" />
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-3" />
                       Querying Blockchain...
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center">
-                      <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                      </svg>
-                      Verify Document
-                    </div>
+                    "Verify Document"
                   )}
                 </Button>
               </form>
@@ -301,7 +291,7 @@ export function DocumentVerificationForm() {
                   <div className="flex justify-center gap-4 pt-6 border-t border-gray-200">
                     <Button
                       onClick={() => { setResult(null); setTokenId(""); setInstituteAddr(""); }}
-                      className="btn-gradient"
+                      className="bg-white border border-gray-300 text-gray-900 hover:bg-gray-50 transition-colors"
                     >
                       Verify Another
                     </Button>
@@ -311,35 +301,18 @@ export function DocumentVerificationForm() {
             )}
           </Card>
 
-          <div className="text-center mt-8 animate-slide-up">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-                <h3 className="font-semibold text-gray-800 mb-1">On-Chain Verification</h3>
-                <p className="text-sm text-gray-600">Queries the blockchain directly — no intermediary</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-                <h3 className="font-semibold text-gray-800 mb-1">Tamper-Proof</h3>
-                <p className="text-sm text-gray-600">Soul Bound Tokens cannot be transferred or forged</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                </div>
-                <h3 className="font-semibold text-gray-800 mb-1">Globally Verifiable</h3>
-                <p className="text-sm text-gray-600">Anyone can verify credentials without an account</p>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12 text-center text-sm">
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-1">On-Chain Verification</h3>
+              <p className="text-gray-500">Queries the blockchain directly with no intermediary.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-1">Tamper-Proof</h3>
+              <p className="text-gray-500">Soul Bound Tokens cannot be transferred or forged.</p>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-1">Globally Verifiable</h3>
+              <p className="text-gray-500">Anyone can verify credentials instantly.</p>
             </div>
           </div>
         </div>
