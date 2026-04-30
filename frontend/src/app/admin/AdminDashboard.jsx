@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,123 +21,141 @@ import { Badge } from "@/components/ui/badge";
 import AddAdminButton from "./AddAdminButton";
 import RemoveAdminButton from "./RemoveAdminButton";
 import HighAuthApprovalButton from "./HighAuthApprovalButton";
-import { Web3Provider } from "@/components/Web3Provider";
-import Image from "next/image";
-import { useRouteGuard } from "@/hooks/useRouteGuard";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  getAllAdmins,
+  getOwner,
+  getPendingHigherAuthorities,
+  getPendingInstitutes,
+  getApprovedHigherAuthorities,
+  getApprovedInstitutes,
+  rejectHigherAuthority,
+  rejectInstitute,
+  parseContractError,
+} from "@/services";
 
 export function AdminDashboard() {
-  const { isAuthorized, isLoading } = useRouteGuard({
-    allowedRoles: ["super-admin", "admin"],
-    requireApproval: false,
-  });
+  const { user, address } = useAuth();
 
-  if (isLoading) {
+  // ── State ─────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState("approvals");
+  const [loading, setLoading] = useState(true);
+  const [owner, setOwner] = useState("");
+  const [admins, setAdmins] = useState([]);
+  const [pendingAuthorities, setPendingAuthorities] = useState([]);
+  const [pendingInstitutes, setPendingInstitutes] = useState([]);
+  const [approvedAuthorities, setApprovedAuthorities] = useState([]);
+  const [approvedInstitutes, setApprovedInstitutes] = useState([]);
+  const [rejectingAddress, setRejectingAddress] = useState(null);
+
+  // ── Fetch all data from blockchain ────────────────────────
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [
+        ownerAddr,
+        adminList,
+        pendingHA,
+        pendingInst,
+        approvedHA,
+        approvedInst,
+      ] = await Promise.all([
+        getOwner(),
+        getAllAdmins(),
+        getPendingHigherAuthorities(),
+        getPendingInstitutes(),
+        getApprovedHigherAuthorities(),
+        getApprovedInstitutes(),
+      ]);
+      setOwner(ownerAddr);
+      setAdmins(adminList);
+      setPendingAuthorities(pendingHA);
+      setPendingInstitutes(pendingInst);
+      setApprovedAuthorities(approvedHA);
+      setApprovedInstitutes(approvedInst);
+    } catch (err) {
+      console.error("Error fetching admin data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // ── Helpers ───────────────────────────────────────────────
+  const truncate = (addr) =>
+    addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "";
+
+  const isSuperAdmin = address && owner &&
+    address.toLowerCase() === owner.toLowerCase();
+
+  const handleRejectAuthority = async (authorityAddr) => {
+    setRejectingAddress(authorityAddr);
+    try {
+      const tx = await rejectHigherAuthority(authorityAddr);
+      await tx.wait();
+      await fetchData();
+    } catch (err) {
+      alert(parseContractError(err));
+    } finally {
+      setRejectingAddress(null);
+    }
+  };
+
+  const handleRejectInstitute = async (instAddr) => {
+    setRejectingAddress(instAddr);
+    try {
+      const tx = await rejectInstitute(instAddr);
+      await tx.wait();
+      await fetchData();
+    } catch (err) {
+      alert(parseContractError(err));
+    } finally {
+      setRejectingAddress(null);
+    }
+  };
+
+  // ── Stats ─────────────────────────────────────────────────
+  const stats = [
+    {
+      title: "Pending Authorities",
+      value: pendingAuthorities.length,
+      icon: "🏛️",
+    },
+    {
+      title: "Pending Institutes",
+      value: pendingInstitutes.length,
+      icon: "🏫",
+    },
+    {
+      title: "Active Admins",
+      value: admins.length,
+      icon: "👥",
+    },
+    {
+      title: "Approved Entities",
+      value: approvedAuthorities.length + approvedInstitutes.length,
+      icon: "✅",
+    },
+  ];
+
+  // ── Loading State ─────────────────────────────────────────
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen gradient-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading admin dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
+          <p className="mt-4 text-gray-600">
+            Loading data from blockchain...
+          </p>
         </div>
       </div>
     );
   }
 
-  if (!isAuthorized) {
-    return null; // Route guard will handle redirect
-  }
-  const [activeTab, setActiveTab] = useState("approvals");
-  const [admins, setAdmins] = useState([
-    { id: "0xDc927Bd56CF9DfC2e3779C7E3D6d28dA1C219969", name: "Farzan Ahmad" },
-    { id: "0x7DD92c8aC584503885B95009330d89Da158E5f41", name: "Syed Asmar" },
-    { id: "0x8C0100Bd2C2Db24e3d63275716eFd89159781727", name: "Emad Zaheer" },
-  ]);
-  const [approvedRequests, setApprovedRequests] = useState([]);
-
-  const pendingRequests = [
-    {
-      id: "REQ-001",
-      requestedBy: "University of Technology",
-      description: "Institute Registration Approval",
-      status: "Pending",
-      priority: "High",
-      date: "2024-01-15",
-      type: "Institute",
-    },
-    {
-      id: "REQ-002",
-      requestedBy: "State Education Board",
-      description: "Authority Registration Request",
-      status: "Pending",
-      priority: "Medium",
-      date: "2024-01-14",
-      type: "Authority",
-    },
-    {
-      id: "REQ-003",
-      requestedBy: "Technical College",
-      description: "Document Verification Access",
-      status: "Pending",
-      priority: "High",
-      date: "2024-01-13",
-      type: "Institute",
-    },
-    {
-      id: "REQ-004",
-      requestedBy: "International Accreditation",
-      description: "Global Recognition Setup",
-      status: "Pending",
-      priority: "Low",
-      date: "2024-01-12",
-      type: "Authority",
-    },
-  ];
-
-  const stats = [
-    {
-      title: "Total Requests",
-      value: pendingRequests.length,
-      change: "+2 today",
-      icon: "📝",
-      color: "blue",
-    },
-    {
-      title: "Active Admins",
-      value: admins.length,
-      change: "All active",
-      icon: "👥",
-      color: "green",
-    },
-    {
-      title: "Approved Today",
-      value: approvedRequests.length,
-      change: "+3 this week",
-      icon: "✅",
-      color: "purple",
-    },
-    {
-      title: "Pending Reviews",
-      value: pendingRequests.filter((r) => r.priority === "High").length,
-      change: "High priority",
-      icon: "⚡",
-      color: "orange",
-    },
-  ];
-
-  const getPriorityBadge = (priority) => {
-    const variants = {
-      High: "bg-red-100 text-red-800",
-      Medium: "bg-yellow-100 text-yellow-800",
-      Low: "bg-green-100 text-green-800",
-    };
-    return variants[priority] || variants.Medium;
-  };
-
-  const getTypeBadge = (type) => {
-    return type === "Institute"
-      ? "bg-blue-100 text-blue-800"
-      : "bg-purple-100 text-purple-800";
-  };
-
+  // ── Render ────────────────────────────────────────────────
   return (
     <div className="min-h-screen gradient-background">
       {/* Header */}
@@ -164,7 +181,8 @@ export function AdminDashboard() {
                   Admin Dashboard
                 </h1>
                 <p className="text-sm text-gray-600">
-                  Manage platform operations
+                  {isSuperAdmin ? "Super Admin" : "Admin"} •{" "}
+                  {truncate(address)}
                 </p>
               </div>
             </div>
@@ -188,16 +206,14 @@ export function AdminDashboard() {
                   ⚙️ Management
                 </Button>
               </div>
-
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <Image
-                  src="/placeholder-user.jpg"
-                  width={32}
-                  height={32}
-                  alt="Admin Avatar"
-                  className="rounded-full"
-                />
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchData}
+                className="text-gray-600"
+              >
+                🔄 Refresh
+              </Button>
             </div>
           </div>
         </div>
@@ -217,7 +233,6 @@ export function AdminDashboard() {
                     <p className="text-2xl font-bold text-gray-900 mt-1">
                       {stat.value}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">{stat.change}</p>
                   </div>
                   <div className="text-3xl">{stat.icon}</div>
                 </div>
@@ -226,205 +241,192 @@ export function AdminDashboard() {
           ))}
         </div>
 
-        {/* Main Content */}
+        {/* ═══════════════════════════════════════════════════ */}
+        {/* APPROVALS TAB                                       */}
+        {/* ═══════════════════════════════════════════════════ */}
         {activeTab === "approvals" ? (
           <div className="space-y-6 animate-fade-in">
+            {/* Pending Higher Authorities */}
             <Card className="glass-card shadow-xl">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-2xl font-bold text-gray-900 flex items-center">
-                      <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg flex items-center justify-center mr-3">
-                        <svg
-                          className="w-5 h-5 text-white"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      Pending Approvals
+                    <CardTitle className="text-xl font-bold text-gray-900 flex items-center">
+                      🏛️ Pending Higher Authorities
                     </CardTitle>
-                    <CardDescription className="text-gray-600 mt-2">
-                      Review and approve registration requests from institutions
-                      and authorities
+                    <CardDescription className="text-gray-600 mt-1">
+                      Higher Authorities require 3 admin approvals to be
+                      activated
                     </CardDescription>
                   </div>
                   <Badge className="status-pending">
-                    {pendingRequests.length} Pending
+                    {pendingAuthorities.length} Pending
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-gray-200">
-                        <TableHead className="font-semibold text-gray-700">
-                          Request ID
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700">
-                          Organization
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700">
-                          Description
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700">
-                          Type
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700">
-                          Priority
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700">
-                          Date
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700">
-                          Actions
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pendingRequests.map((request, index) => (
-                        <TableRow
-                          key={request.id}
-                          className="hover:bg-gray-50/50 animate-slide-in-left"
-                          style={{ animationDelay: `${index * 0.1}s` }}
-                        >
-                          <TableCell className="font-mono text-sm font-medium text-blue-600">
-                            {request.id}
-                          </TableCell>
-                          <TableCell className="font-medium text-gray-900">
-                            {request.requestedBy}
-                          </TableCell>
-                          <TableCell className="text-gray-700 max-w-xs">
-                            {request.description}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={`${getTypeBadge(
-                                request.type
-                              )} text-xs`}
-                            >
-                              {request.type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={`${getPriorityBadge(
-                                request.priority
-                              )} text-xs`}
-                            >
-                              {request.priority}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-gray-600 text-sm">
-                            {request.date}
-                          </TableCell>
-                          <TableCell>
-                            <HighAuthApprovalButton
-                              setApprovedRequests={setApprovedRequests}
-                              request={request}
-                            />
-                          </TableCell>
+                {pendingAuthorities.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-lg mb-1">No pending authorities</p>
+                    <p className="text-sm">
+                      All Higher Authority registrations have been processed.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-gray-200">
+                          <TableHead className="font-semibold text-gray-700">
+                            Address
+                          </TableHead>
+                          <TableHead className="font-semibold text-gray-700">
+                            Name
+                          </TableHead>
+                          <TableHead className="font-semibold text-gray-700">
+                            Approvals
+                          </TableHead>
+                          <TableHead className="font-semibold text-gray-700">
+                            Actions
+                          </TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      </TableHeader>
+                      <TableBody>
+                        {pendingAuthorities.map((auth, index) => (
+                          <TableRow
+                            key={auth.address}
+                            className="hover:bg-gray-50/50"
+                          >
+                            <TableCell className="font-mono text-sm text-blue-600">
+                              {truncate(auth.address)}
+                            </TableCell>
+                            <TableCell className="font-medium text-gray-900">
+                              {auth.authorityName}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+                                {auth.approvalCount}/3 approvals
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <HighAuthApprovalButton
+                                  authorityAddress={auth.address}
+                                  onSuccess={fetchData}
+                                />
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 hover:bg-red-50 border-red-200"
+                                  onClick={() =>
+                                    handleRejectAuthority(auth.address)
+                                  }
+                                  disabled={rejectingAddress === auth.address}
+                                >
+                                  {rejectingAddress === auth.address
+                                    ? "..."
+                                    : "Reject"}
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Approved Requests */}
-            {approvedRequests.length > 0 && (
-              <Card className="glass-card shadow-xl animate-slide-up">
-                <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-gray-900 flex items-center">
-                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mr-3">
-                      <svg
-                        className="w-5 h-5 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    Approved Requests
-                  </CardTitle>
-                  <CardDescription>
-                    Successfully processed registration requests
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {approvedRequests.map((request, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200 animate-scale-in"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                            <svg
-                              className="w-5 h-5 text-green-600"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {request.requestedBy}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {request.description}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge className="status-success">Approved</Badge>
-                      </div>
-                    ))}
+            {/* Pending Institutes */}
+            <Card className="glass-card shadow-xl">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl font-bold text-gray-900 flex items-center">
+                      🏫 Pending Institutes
+                    </CardTitle>
+                    <CardDescription className="text-gray-600 mt-1">
+                      Institutes are approved by their designated Higher
+                      Authority
+                    </CardDescription>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                  <Badge className="status-pending">
+                    {pendingInstitutes.length} Pending
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {pendingInstitutes.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-lg mb-1">No pending institutes</p>
+                    <p className="text-sm">
+                      All Institute registrations have been processed.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-gray-200">
+                          <TableHead className="font-semibold text-gray-700">
+                            Address
+                          </TableHead>
+                          <TableHead className="font-semibold text-gray-700">
+                            Name
+                          </TableHead>
+                          <TableHead className="font-semibold text-gray-700">
+                            Higher Authority
+                          </TableHead>
+                          <TableHead className="font-semibold text-gray-700">
+                            Status
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {pendingInstitutes.map((inst) => (
+                          <TableRow
+                            key={inst.address}
+                            className="hover:bg-gray-50/50"
+                          >
+                            <TableCell className="font-mono text-sm text-blue-600">
+                              {truncate(inst.address)}
+                            </TableCell>
+                            <TableCell className="font-medium text-gray-900">
+                              {inst.institudeName}
+                            </TableCell>
+                            <TableCell className="font-mono text-sm text-gray-600">
+                              {truncate(inst.higherAuthority)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+                                Awaiting Authority Approval
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         ) : (
+          /* ═══════════════════════════════════════════════════ */
+          /* MANAGEMENT TAB                                      */
+          /* ═══════════════════════════════════════════════════ */
           <div className="space-y-6 animate-fade-in">
             <Card className="glass-card shadow-xl">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-2xl font-bold text-gray-900 flex items-center">
-                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center mr-3">
-                        <svg
-                          className="w-5 h-5 text-white"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                      Admin Management
+                    <CardTitle className="text-xl font-bold text-gray-900 flex items-center">
+                      👥 Admin Management
                     </CardTitle>
-                    <CardDescription className="text-gray-600 mt-2">
-                      Add and manage platform administrators with
-                      blockchain-level security
+                    <CardDescription className="text-gray-600 mt-1">
+                      Manage platform administrators (max 5). Only the Super
+                      Admin can add/remove admins.
                     </CardDescription>
                   </div>
                   <Badge className="status-success">
@@ -433,30 +435,24 @@ export function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-5 h-5 text-blue-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <h3 className="font-semibold text-blue-900">
+                {/* Add Admin Section — only super admin */}
+                {isSuperAdmin && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                    <h3 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                      <span className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
+                        +
+                      </span>
                       Add New Administrator
                     </h3>
+                    <AddAdminButton
+                      admins={admins}
+                      setAdmins={setAdmins}
+                      onSuccess={fetchData}
+                    />
                   </div>
-                  <Web3Provider>
-                    <AddAdminButton />
-                  </Web3Provider>
-                </div>
+                )}
 
+                {/* Admin List */}
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
@@ -465,74 +461,83 @@ export function AdminDashboard() {
                           Wallet Address
                         </TableHead>
                         <TableHead className="font-semibold text-gray-700">
-                          Name
-                        </TableHead>
-                        <TableHead className="font-semibold text-gray-700">
                           Role
                         </TableHead>
                         <TableHead className="font-semibold text-gray-700">
                           Status
                         </TableHead>
-                        <TableHead className="font-semibold text-gray-700">
-                          Actions
-                        </TableHead>
+                        {isSuperAdmin && (
+                          <TableHead className="font-semibold text-gray-700">
+                            Actions
+                          </TableHead>
+                        )}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {admins.map((admin, index) => (
-                        <TableRow
-                          key={admin.id}
-                          className="hover:bg-gray-50/50 animate-slide-in-right"
-                          style={{ animationDelay: `${index * 0.1}s` }}
-                        >
-                          <TableCell className="font-mono text-sm">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
-                                <svg
-                                  className="w-4 h-4 text-white"
-                                  fill="currentColor"
-                                  viewBox="0 0 20 20"
-                                >
-                                  <path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v13z" />
-                                </svg>
+                      {admins.map((admin) => {
+                        const isOwner =
+                          admin.address.toLowerCase() ===
+                          owner.toLowerCase();
+                        return (
+                          <TableRow
+                            key={admin.address}
+                            className="hover:bg-gray-50/50"
+                          >
+                            <TableCell className="font-mono text-sm">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
+                                  <span className="text-white text-xs font-bold">
+                                    {admin.address.slice(2, 4).toUpperCase()}
+                                  </span>
+                                </div>
+                                <span className="text-blue-600">
+                                  {truncate(admin.address)}
+                                </span>
                               </div>
-                              <span className="text-blue-600">
-                                {admin.id.slice(0, 6)}...{admin.id.slice(-4)}
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="font-medium text-gray-900">
-                            {admin.name}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className="bg-purple-100 text-purple-800 text-xs">
-                              Platform Admin
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse-soft"></div>
-                              <span className="text-green-600 text-sm font-medium">
-                                Active
-                              </span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <RemoveAdminButton
-                              admin={admin}
-                              admins={admins}
-                              setAdmins={setAdmins}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                className={
+                                  isOwner
+                                    ? "bg-purple-100 text-purple-800 text-xs"
+                                    : "bg-blue-100 text-blue-800 text-xs"
+                                }
+                              >
+                                {isOwner ? "Super Admin (Owner)" : "Admin"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse-soft" />
+                                <span className="text-green-600 text-sm font-medium">
+                                  Active
+                                </span>
+                              </div>
+                            </TableCell>
+                            {isSuperAdmin && (
+                              <TableCell>
+                                {isOwner ? (
+                                  <span className="text-xs text-gray-400">
+                                    Cannot remove owner
+                                  </span>
+                                ) : (
+                                  <RemoveAdminButton
+                                    adminAddress={admin.address}
+                                    onSuccess={fetchData}
+                                  />
+                                )}
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Admin Guidelines */}
+            {/* Security Guidelines */}
             <Card className="glass-card shadow-xl animate-slide-up">
               <CardHeader>
                 <CardTitle className="text-xl font-bold text-gray-900 flex items-center">
@@ -560,18 +565,20 @@ export function AdminDashboard() {
                     </h4>
                     <ul className="space-y-2 text-sm text-gray-600">
                       <li className="flex items-center space-x-2">
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
                         <span>
-                          Review and approve institution registrations
+                          Review and approve Higher Authority registrations
                         </span>
                       </li>
                       <li className="flex items-center space-x-2">
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                        <span>Manage platform administrator access</span>
+                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                        <span>
+                          Each authority needs 3 different admin approvals
+                        </span>
                       </li>
                       <li className="flex items-center space-x-2">
-                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
-                        <span>Monitor system security and integrity</span>
+                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                        <span>Monitor platform security and integrity</span>
                       </li>
                     </ul>
                   </div>
@@ -581,16 +588,18 @@ export function AdminDashboard() {
                     </h4>
                     <ul className="space-y-2 text-sm text-gray-600">
                       <li className="flex items-center space-x-2">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                        <span>Wallet-based authentication required</span>
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                        <span>All actions are on-chain and immutable</span>
                       </li>
                       <li className="flex items-center space-x-2">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                        <span>All actions recorded on blockchain</span>
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                        <span>
+                          Only Super Admin (owner) can add/remove admins
+                        </span>
                       </li>
                       <li className="flex items-center space-x-2">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                        <span>Multi-signature approval process</span>
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                        <span>Maximum of 5 admins enforced by contract</span>
                       </li>
                     </ul>
                   </div>

@@ -1,13 +1,10 @@
-import React from "react";
 import { AdminDashboard } from "./AdminDashboard";
 import { AdminRoute } from "@/components/ProtectedRoute";
 
-const AdminPanel = () => {
+export default function AdminPage() {
   return (
     <AdminRoute>
       <AdminDashboard />
     </AdminRoute>
   );
-};
-
-export default AdminPanel;
+}

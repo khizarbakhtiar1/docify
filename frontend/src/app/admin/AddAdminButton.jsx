@@ -1,62 +1,55 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { addAdmin } from "@/services";
-import { ethers, isAddress } from "ethers";
+import { isAddress } from "ethers";
+import { addAdmin, parseContractError } from "@/services";
 
-const AddAdminButton = ({ admins, setAdmins }) => {
+const AddAdminButton = ({ onSuccess }) => {
   const [newAdminAddress, setNewAdminAddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleAddAdmin = async () => {
-    if (
-      newAdminAddress.trim() !== "" &&
-      isAddress(newAdminAddress)
-    ) {
-      setIsLoading(true);
-      setError(null);
-      try {
-        await addAdmin(newAdminAddress);
-        setAdmins([
-          ...admins,
-          { id: `ADMIN-${admins.length + 1}`, address: newAdminAddress },
-        ]);
-        setNewAdminAddress("");
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
+    if (!newAdminAddress.trim() || !isAddress(newAdminAddress)) {
       setError("Please enter a valid Ethereum address");
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const tx = await addAdmin(newAdminAddress);
+      await tx.wait();
+      setNewAdminAddress("");
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      setError(parseContractError(err));
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="gradient-card p-6 rounded-xl">
-      <h3 className="text-lg font-semibold mb-4">Add New Admin</h3>
-      <div className="flex flex-col gap-4">
+    <div className="space-y-3">
+      <div className="flex gap-3">
         <input
-          className="py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="flex-1 py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           type="text"
           value={newAdminAddress}
           onChange={(e) => setNewAdminAddress(e.target.value)}
           placeholder="Enter Ethereum address (0x...)"
         />
-        <Button 
-          onClick={handleAddAdmin} 
+        <Button
+          onClick={handleAddAdmin}
           disabled={isLoading}
-          className="btn-gradient w-full"
+          className="btn-gradient whitespace-nowrap"
         >
           {isLoading ? "Adding..." : "Add Admin"}
         </Button>
-        {error && (
-          <p className="text-red-500 text-sm mt-2 p-2 bg-red-50 rounded">
-            {error}
-          </p>
-        )}
       </div>
+      {error && (
+        <p className="text-red-500 text-sm p-2 bg-red-50 rounded">{error}</p>
+      )}
     </div>
   );
 };
