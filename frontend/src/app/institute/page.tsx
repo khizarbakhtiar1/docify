@@ -1,13 +1,10 @@
-import React from "react";
 import { InstituteDashboard } from "./InstituteDashboard";
 import { InstituteRoute } from "@/components/ProtectedRoute";
 
-const InstitutePanel = () => {
+export default function InstitutePage() {
   return (
     <InstituteRoute>
       <InstituteDashboard />
     </InstituteRoute>
   );
-};
-
-export default InstitutePanel;
+}

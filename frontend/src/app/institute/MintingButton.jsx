@@ -1,136 +1,100 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ethers } from "ethers";
-import InstituteABI from "../../../../frontend/artifacts/contracts/Institute.sol/Institute.json";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { mintSoulBoundToken, parseContractError } from "@/services";
+import { isAddress } from "ethers";
 
-const MintingButton = ({
-  instituteAddress,
-  documentHash,
-  recipientAddress,
-}) => {
+const MintingButton = ({ instituteContract, documentHash, onSuccess }) => {
+  const [showForm, setShowForm] = useState(false);
+  const [recipientAddress, setRecipientAddress] = useState("");
   const [isMinting, setIsMinting] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  const mintToken = async () => {
+  const handleMint = async (e) => {
+    e.preventDefault();
+    if (!recipientAddress || !isAddress(recipientAddress)) {
+      setError("Please enter a valid recipient address");
+      return;
+    }
+
     setIsMinting(true);
     setError(null);
-    setSuccess(false);
-
     try {
-      if (!window.ethereum) {
-        throw new Error("MetaMask is not installed!");
-      }
-
-      if (!instituteAddress || !documentHash || !recipientAddress) {
-        throw new Error("Missing required parameters for minting");
-      }
-
-      // Connect to the user's Ethereum wallet
-      await window.ethereum.request({ method: "eth_requestAccounts" });
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-
-      // Create a contract instance
-      const instituteContract = new ethers.Contract(
-        instituteAddress,
-        InstituteABI.abi,
-        signer
-      );
-
-      // Call the mintSoulBoundToken function
-      const tx = await instituteContract.mintSoulBoundToken(
+      const tx = await mintSoulBoundToken(
+        instituteContract,
         recipientAddress,
         documentHash
       );
-      
-      console.log("Transaction sent:", tx.hash);
       await tx.wait();
-
-      console.log("Soul Bound Token minted successfully");
       setSuccess(true);
-      // You might want to add some callback here to update the UI or fetch updated data
+      setRecipientAddress("");
+      setShowForm(false);
+      if (onSuccess) onSuccess();
     } catch (err) {
-      console.error("Error minting Soul Bound Token:", err);
-      setError(err.message || "Failed to mint token");
+      setError(parseContractError(err));
     } finally {
       setIsMinting(false);
     }
   };
 
+  if (success) {
+    return (
+      <Badge className="bg-green-100 text-green-800 text-xs">
+        ✓ Minted
+      </Badge>
+    );
+  }
+
   return (
     <div className="space-y-2">
-      <Button
-        size="sm"
-        className="btn-gradient h-9 px-4 text-sm"
-        onClick={mintToken}
-        disabled={isMinting || success}
-      >
-        {isMinting ? "Minting..." : success ? "Minted!" : "Mint SBT"}
-      </Button>
-      
-      {error && (
-        <div className="text-red-500 text-xs p-2 bg-red-50 rounded">
-          {error}
-        </div>
+      {!showForm ? (
+        <Button
+          size="sm"
+          className="btn-gradient"
+          onClick={() => setShowForm(true)}
+        >
+          Mint SBT
+        </Button>
+      ) : (
+        <form onSubmit={handleMint} className="flex items-center gap-2">
+          <Input
+            type="text"
+            value={recipientAddress}
+            onChange={(e) => setRecipientAddress(e.target.value)}
+            placeholder="Recipient address (0x...)"
+            className="text-xs h-8 w-48"
+            required
+          />
+          <Button
+            type="submit"
+            size="sm"
+            className="btn-gradient h-8"
+            disabled={isMinting}
+          >
+            {isMinting ? "..." : "Mint"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8"
+            onClick={() => { setShowForm(false); setError(null); }}
+          >
+            ✕
+          </Button>
+        </form>
       )}
-      
-      {success && (
-        <div className="text-green-500 text-xs p-2 bg-green-50 rounded">
-          Soul Bound Token minted successfully!
-        </div>
+      {error && (
+        <p className="text-red-500 text-xs">{error}</p>
       )}
     </div>
   );
 };
 
+
+
 export default MintingButton;
-
-// const MintSoulBoundTokenButton = ({ instituteAddress, documentHash, recipientAddress }) => {
-//   const [isMinting, setIsMinting] = useState(false);
-//   const [error, setError] = useState(null);
-
-//   const mintToken = async () => {
-//     setIsMinting(true);
-//     setError(null);
-
-//     try {
-//       // Connect to the user's Ethereum wallet
-//       await window.ethereum.request({ method: 'eth_requestAccounts' });
-//       const provider = new ethers.providers.Web3Provider(window.ethereum);
-//       const signer = provider.getSigner();
-
-//       // Create a contract instance
-//       const instituteContract = new ethers.Contract(instituteAddress, InstituteABI.abi, signer);
-
-//       // Call the mintSoulBoundToken function
-//       const tx = await instituteContract.mintSoulBoundToken(recipientAddress, documentHash);
-//       await tx.wait();
-
-//       console.log('Soul Bound Token minted successfully');
-//       // You might want to add some callback here to update the UI or fetch updated data
-//     } catch (err) {
-//       console.error('Error minting Soul Bound Token:', err);
-//       setError(err.message);
-//     } finally {
-//       setIsMinting(false);
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <Button
-//         variant="outline"
-//         className="bg-[#3B82F6] text-white hover:bg-[#2563EB] focus:ring-[#3B82F6]"
-//         onClick={mintToken}
-//         disabled={isMinting}
-//       >
-//         {isMinting ? 'Minting...' : 'Mint Soul Bound Token'}
-//       </Button>
-//       {error && <p className="text-red-500 mt-2">{error}</p>}
-//     </div>
-//   );
-// };
-
-// export default MintSoulBoundTokenButton;

@@ -1,57 +1,36 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ethers, parseEther } from "ethers";
-import InstituteABI from "../../../frontend/artifacts/contracts/Institute.sol/Institute.json";
+import { purchaseCredits, parseContractError, CreditPlan, PLAN_DETAILS } from "@/services";
 
-const PurchaseCreditButton = ({ instituteAddress, planType, isPro = false }) => {
+const PurchaseCreditButton = ({ instituteContract, planType, isPro = false, onSuccess }) => {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
 
-  const planDetails = {
-    1: { credits: 100, price: "0.049" }, // Using string to avoid floating point issues
-    2: { credits: 500, price: "0.199" },
-    3: { credits: 1500, price: "0.499" },
-  };
+  const handlePurchase = async () => {
+    if (!instituteContract) {
+      setError("Institute contract not found");
+      return;
+    }
 
-  const purchaseCredits = async () => {
     setIsPurchasing(true);
     setError(null);
+    setSuccess(false);
 
     try {
-      if (!window.ethereum) {
-        throw new Error("MetaMask is not installed!");
-      }
-
-      await window.ethereum.request({ method: "eth_requestAccounts" });
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-
-      const instituteContract = new ethers.Contract(
-        instituteAddress,
-        InstituteABI.abi,
-        signer
-      );
-
-      const plan = planDetails[planType];
-      const tx = await instituteContract.purchaseCredits(planType, {
-        value: parseEther(plan.price),
-      });
-      
-      console.log("Transaction sent:", tx.hash);
+      const tx = await purchaseCredits(instituteContract, planType);
       await tx.wait();
-
-      console.log(`${plan.credits} credits purchased successfully`);
-      // Add callback or state update here to reflect the new credit balance
+      setSuccess(true);
+      if (onSuccess) onSuccess();
     } catch (err) {
-      console.error("Error purchasing credits:", err);
-      setError(err.message || "Transaction failed");
+      setError(parseContractError(err));
     } finally {
       setIsPurchasing(false);
     }
   };
 
-  const plan = planDetails[planType];
+  const plan = PLAN_DETAILS[planType];
   if (!plan) {
     return <div className="text-red-500">Invalid plan type</div>;
   }
@@ -74,15 +53,21 @@ const PurchaseCreditButton = ({ instituteAddress, planType, isPro = false }) => 
             ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white' 
             : 'btn-gradient'
         }`}
-        onClick={purchaseCredits}
-        disabled={isPurchasing || !instituteAddress}
+        onClick={handlePurchase}
+        disabled={isPurchasing || !instituteContract}
       >
-        {isPurchasing ? "Processing..." : "Purchase Credits"}
+        {isPurchasing ? "Processing..." : success ? "✓ Purchased!" : "Purchase Credits"}
       </Button>
       
       {error && (
         <div className="text-red-500 text-sm p-2 bg-red-50 rounded">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="text-green-600 text-sm p-2 bg-green-50 rounded text-center">
+          ✓ Credits purchased successfully!
         </div>
       )}
     </div>
