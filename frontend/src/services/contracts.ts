@@ -5,10 +5,10 @@
 import { ethers } from "ethers";
 
 // ABIs — imported from compiled artifacts
-import IdentityRegistryArtifact from "../../artifacts/contracts/IdentityRegistry.sol/IdentityRegistry.json";
-import FactoryArtifact from "../../artifacts/contracts/Factory.sol/Factory.json";
-import AuthorityArtifact from "../../artifacts/contracts/Authority.sol/Authority.json";
-import InstituteArtifact from "../../artifacts/contracts/Institute.sol/Institute.json";
+import IdentityRegistryArtifact from "../abis/IdentityRegistry.json";
+import FactoryArtifact from "../abis/Factory.json";
+import AuthorityArtifact from "../abis/Authority.json";
+import InstituteArtifact from "../abis/Institute.json";
 
 // ─── Environment Config ────────────────────────────────────────
 export const config = {

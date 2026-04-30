@@ -1,0 +1,12 @@
+{
+  "name": "docify-monorepo",
+  "version": "1.0.0",
+  "description": "Docify Blockchain Document Verification Platform",
+  "scripts": {
+    "dev:contracts": "cd backend && npx hardhat node",
+    "dev:deploy": "cd backend && npx hardhat run scripts/setup-dev.js --network localhost && npx hardhat export-abis",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev": "npm run dev:contracts & sleep 5 && npm run dev:deploy && npm run dev:frontend",
+    "test:contracts": "cd backend && npx hardhat test"
+  }
+}
