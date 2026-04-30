@@ -106,79 +106,83 @@ export function Header() {
               <span className="sr-only">Toggle navigation</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="gradient-background border-r border-gray-200/50">
+          <SheetContent side="left" className="bg-white border-r border-gray-100">
             <div className="flex h-16 items-center justify-between px-4">
-              <Link
-                href="/"
-                className="flex items-center"
-                prefetch={false}
-              >
-                          <Image
-            src="/black-text.png"
-            alt="Docify"
-            width={220}
-            height={100}
-            className="h-24 w-auto"
-          />
+              <Link href="/" className="flex items-center" prefetch={false}>
+                <Image
+                  src="/black-text.png"
+                  alt="Docify"
+                  width={180}
+                  height={80}
+                  className="h-20 w-auto"
+                />
               </Link>
             </div>
             <nav className="grid gap-2 px-4 py-6">
               <Link
                 href="/"
-                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="block px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-md"
                 prefetch={false}
               >
-                <HomeIcon className="h-5 w-5" />
-                <span>Home</span>
+                Home
+              </Link>
+              <Link
+                href="/overview"
+                className="block px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-md"
+                prefetch={false}
+              >
+                Overview
+              </Link>
+              <Link
+                href="/plans"
+                className="block px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-md"
+                prefetch={false}
+              >
+                Plans
               </Link>
               {(user?.role === "super-admin" || user?.role === "admin") && (
                 <Link
                   href="/admin"
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="block px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-md"
                   prefetch={false}
                 >
-                  <PuzzleIcon className="h-5 w-5" />
-                  <span>Admin Dashboard</span>
+                  Admin Dashboard
                 </Link>
               )}
               {user?.role === "higher-authority" && (
                 <Link
                   href="/higher-authority"
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="block px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-md"
                   prefetch={false}
                 >
-                  <PuzzleIcon className="h-5 w-5" />
-                  <span>Authority Dashboard</span>
+                  Authority Dashboard
                 </Link>
               )}
               {user?.role === "institute" && (
                 <Link
                   href="/institute"
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="block px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-md"
                   prefetch={false}
                 >
-                  <PuzzleIcon className="h-5 w-5" />
-                  <span>Institute Dashboard</span>
+                  Institute Dashboard
                 </Link>
               )}
               <Link
                 href="/verify"
-                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="block px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-md"
                 prefetch={false}
               >
-                <ShieldCheckIcon className="h-5 w-5" />
-                <span>Verify</span>
+                Verify
               </Link>
               <Link
                 href="/contact"
-                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="block px-3 py-2 text-base font-medium text-gray-900 hover:bg-gray-50 rounded-md"
                 prefetch={false}
               >
-                <MailIcon className="h-5 w-5" />
-                <span>Contact Us</span>
+                Contact Us
               </Link>
             </nav>
-            <div className="border-t border-gray-200 px-4 py-6">
+            <div className="border-t border-gray-100 px-4 py-6">
               <WalletConnect />
             </div>
           </SheetContent>
