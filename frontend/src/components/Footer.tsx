@@ -23,7 +23,7 @@ export function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-gray-600 hover:text-gray-900"
                     prefetch={false}
                   >
@@ -32,7 +32,7 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/verify"
                     className="text-gray-600 hover:text-gray-900"
                     prefetch={false}
                   >
@@ -41,25 +41,25 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/overview"
                     className="text-gray-600 hover:text-gray-900"
                     prefetch={false}
                   >
-                    My Documents
+                    Overview
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/plans"
                     className="text-gray-600 hover:text-gray-900"
                     prefetch={false}
                   >
-                    About
+                    Plans
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/contact"
                     className="text-gray-600 hover:text-gray-900"
                     prefetch={false}
                   >
@@ -73,7 +73,7 @@ export function Footer() {
               <ul className="space-y-2">
                 <li>
                   <Link
-                    href="#"
+                    href="/overview"
                     className="text-gray-600 hover:text-gray-900"
                     prefetch={false}
                   >
@@ -82,16 +82,16 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/verify"
                     className="text-gray-600 hover:text-gray-900"
                     prefetch={false}
                   >
-                    FAQs
+                    Verification API
                   </Link>
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="/"
                     className="text-gray-600 hover:text-gray-900"
                     prefetch={false}
                   >
@@ -100,9 +100,11 @@ export function Footer() {
                 </li>
                 <li>
                   <Link
-                    href="#"
+                    href="https://github.com/khizarbakhtiar1/docify"
                     className="text-gray-600 hover:text-gray-900"
                     prefetch={false}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     GitHub
                   </Link>

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,8 +15,11 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { WalletConnect } from "./WalletConnect";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Header() {
+  const { user } = useAuth();
+
   return (
     <header className="fixed top-0 z-50 w-full bg-gradient-to-r from-white via-gray-50 to-blue-50/30 backdrop-blur-lg border-b border-gray-200/50 shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
@@ -31,24 +36,39 @@ export function Header() {
         <nav className="hidden items-center gap-8 md:flex">
           <NavigationMenu>
             <NavigationMenuList className="gap-6">
-              <NavigationMenuLink asChild>
-                <Link
-                  href="/overview"
-                  className="group inline-flex h-9 w-max items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-none"
-                  prefetch={false}
-                >
-                  Overview
-                </Link>
-              </NavigationMenuLink>
-              <NavigationMenuLink asChild>
-                <Link
-                  href="/plans"
-                  className="group inline-flex h-9 w-max items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-none"
-                  prefetch={false}
-                >
-                  Plans
-                </Link>
-              </NavigationMenuLink>
+              {(user?.role === "super-admin" || user?.role === "admin") && (
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/admin"
+                    className="group inline-flex h-9 w-max items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-none"
+                    prefetch={false}
+                  >
+                    Admin Dashboard
+                  </Link>
+                </NavigationMenuLink>
+              )}
+              {user?.role === "higher-authority" && (
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/higher-authority"
+                    className="group inline-flex h-9 w-max items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-none"
+                    prefetch={false}
+                  >
+                    Authority Dashboard
+                  </Link>
+                </NavigationMenuLink>
+              )}
+              {user?.role === "institute" && (
+                <NavigationMenuLink asChild>
+                  <Link
+                    href="/institute"
+                    className="group inline-flex h-9 w-max items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-none"
+                    prefetch={false}
+                  >
+                    Institute Dashboard
+                  </Link>
+                </NavigationMenuLink>
+              )}
               <NavigationMenuLink asChild>
                 <Link
                   href="/verify"
@@ -111,22 +131,36 @@ export function Header() {
                 <HomeIcon className="h-5 w-5" />
                 <span>Home</span>
               </Link>
-              <Link
-                href="/about"
-                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                prefetch={false}
-              >
-                <PuzzleIcon className="h-5 w-5" />
-                <span>Overview</span>
-              </Link>
-              <Link
-                href="/plans"
-                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                prefetch={false}
-              >
-                <DollarSignIcon className="h-5 w-5" />
-                <span>Plans</span>
-              </Link>
+              {(user?.role === "super-admin" || user?.role === "admin") && (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  prefetch={false}
+                >
+                  <PuzzleIcon className="h-5 w-5" />
+                  <span>Admin Dashboard</span>
+                </Link>
+              )}
+              {user?.role === "higher-authority" && (
+                <Link
+                  href="/higher-authority"
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  prefetch={false}
+                >
+                  <PuzzleIcon className="h-5 w-5" />
+                  <span>Authority Dashboard</span>
+                </Link>
+              )}
+              {user?.role === "institute" && (
+                <Link
+                  href="/institute"
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  prefetch={false}
+                >
+                  <PuzzleIcon className="h-5 w-5" />
+                  <span>Institute Dashboard</span>
+                </Link>
+              )}
               <Link
                 href="/verify"
                 className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -136,7 +170,7 @@ export function Header() {
                 <span>Verify</span>
               </Link>
               <Link
-                href="#contact"
+                href="/contact"
                 className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 prefetch={false}
               >
