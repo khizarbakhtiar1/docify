@@ -20,9 +20,9 @@ contract Institute is ERC721, Ownable {
     uint256 public constant BASIC_PLAN_CREDITS = 100;
     uint256 public constant STANDARD_PLAN_CREDITS = 500;
     uint256 public constant PREMIUM_PLAN_CREDITS = 1500;
-    uint256 public constant BASIC_PLAN_PRICE = 49 ether;
-    uint256 public constant STANDARD_PLAN_PRICE = 199 ether;
-    uint256 public constant PREMIUM_PLAN_PRICE = 499 ether;
+    uint256 public constant BASIC_PLAN_PRICE = 0.049 ether;
+    uint256 public constant STANDARD_PLAN_PRICE = 0.199 ether;
+    uint256 public constant PREMIUM_PLAN_PRICE = 0.499 ether;
 
 
     address private _superAdmin;

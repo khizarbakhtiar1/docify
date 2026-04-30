@@ -35,13 +35,8 @@ contract Authority is Ownable {
 
     function approveDocumentRequest(address _institute, bytes32 _documentHash) external onlyOwner {
         require(institutes[_institute] != address(0), "Institute not registered under this authority");
-        if (isSuperAuthority) {
-            Institute(institutes[_institute]).approveDocument(_documentHash);
-            emit DocumentRequestApproved(_institute, _documentHash);
-        } else {
-            Institute(institutes[_institute]).approveDocument(_documentHash);
-            emit DocumentRequestApproved(_institute, _documentHash);
-        }
+        Institute(institutes[_institute]).approveDocument(_documentHash);
+        emit DocumentRequestApproved(_institute, _documentHash);
     }
 
     function rejectDocumentRequest(address _institute, bytes32 _documentHash) external onlyOwner {

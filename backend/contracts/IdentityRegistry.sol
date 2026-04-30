@@ -114,10 +114,9 @@ contract IdentityRegistry is Ownable {
         require(!higherAuthorities[_authority].isApproved, "Higher authority already approved");
 
         delete higherAuthorities[_authority];
-        // Clear admin approvals
-        for (uint i = 0; i < MAX_ADMINS; i++) {
-            delete higherAuthorityAdminApprovals[_authority][address(uint160(i))];
-        }
+        // Note: Admin approval mappings for this authority are left as-is since
+        // the authority struct is deleted. If the authority re-registers, approvals
+        // start fresh because approvalCount resets to 0 in the new struct.
 
         emit HigherAuthorityRejected(_authority);
     }

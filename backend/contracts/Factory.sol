@@ -38,7 +38,7 @@ contract Factory is Ownable {
         require(msg.sender == address(identityRegistry), "Only IdentityRegistry can create Institute contracts");
         require(instituteContracts[_institute] == address(0), "Institute contract already exists");
         require(authorityContracts[_authority] != address(0), "Invalid authority");
-        address newInstituteContract = address(new Institute(_institute, _authority, address(identityRegistry)));
+        address newInstituteContract = address(new Institute(_institute, authorityContracts[_authority], address(identityRegistry)));
         instituteContracts[_institute] = newInstituteContract;
         Authority(authorityContracts[_authority]).addInstitute(_institute, newInstituteContract);
         emit InstituteContractCreated(_institute, newInstituteContract, _authority);
