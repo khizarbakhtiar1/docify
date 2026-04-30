@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { addAdmin } from "@/utils/ethers";
+import { addAdmin } from "@/services";
 import { ethers, isAddress } from "ethers";
 
 const AddAdminButton = ({ admins, setAdmins }) => {

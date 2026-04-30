@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+"use client";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ethers } from "ethers";
-import { identityRegistryContract, getSigner } from "../../utils/ethers";
+import { approveHigherAuthority, parseContractError } from "@/services";
 
-const HighAuthApprovalButton = ({ authorityAddress }) => {
+const HighAuthApprovalButton = ({ authorityAddress, onSuccess }) => {
   const [isApproving, setIsApproving] = useState(false);
   const [error, setError] = useState(null);
 
@@ -11,18 +11,13 @@ const HighAuthApprovalButton = ({ authorityAddress }) => {
     setIsApproving(true);
     setError(null);
     try {
-      const signer = await getSigner();
-      const contractWithSigner = identityRegistryContract.connect(signer);
-
-      const tx = await contractWithSigner.approveHigherAuthority(
-        authorityAddress
-      );
+      const tx = await approveHigherAuthority(authorityAddress);
       await tx.wait();
-
       console.log("Higher Authority approved successfully");
+      if (onSuccess) onSuccess();
     } catch (err) {
       console.error("Error approving Higher Authority:", err);
-      setError(err.message);
+      setError(parseContractError(err));
     } finally {
       setIsApproving(false);
     }
@@ -33,7 +28,7 @@ const HighAuthApprovalButton = ({ authorityAddress }) => {
       <Button onClick={handleApprove} disabled={isApproving}>
         {isApproving ? "Approving..." : "Approve"}
       </Button>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
     </div>
   );
 };
