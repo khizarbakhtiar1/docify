@@ -1,15 +1,10 @@
-import React from "react";
 import { HigherAuthorityDashboard } from "./HigherAuthorityDashboard";
 import { HigherAuthorityRoute } from "@/components/ProtectedRoute";
 
-const HighAuthPanel = () => {
+export default function HigherAuthorityPage() {
   return (
     <HigherAuthorityRoute>
-      <div className="">
-        <HigherAuthorityDashboard />
-      </div>
+      <HigherAuthorityDashboard />
     </HigherAuthorityRoute>
   );
-};
-
-export default HighAuthPanel;
+}
