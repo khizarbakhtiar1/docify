@@ -9,16 +9,15 @@ import React, {
 } from "react";
 import { ethers } from "ethers";
 import { useRouter } from "next/navigation";
+import {
+  getOwner,
+  isAdmin as checkIsAdmin,
+  getHigherAuthority,
+  getInstitute,
+  validateConfig,
+} from "@/services";
 
-// Contract addresses - Update these with your deployed contract addresses
-const IDENTITY_REGISTRY_ADDRESS =
-  process.env.NEXT_PUBLIC_IDENTITY_REGISTRY_ADDRESS || "";
-const IDENTITY_REGISTRY_ABI = [
-  "function admins(address) view returns (bool isAdmin, bool exists)",
-  "function higherAuthorities(address) view returns (address walletAddress, string authorityName, uint8 approvalCount, bool isApproved, bool exists)",
-  "function institutes(address) view returns (string institudeName, address higherAuthority, bool isApproved, bool exists)",
-  "function owner() view returns (address)",
-];
+// ─── Types ──────────────────────────────────────────────────────
 
 export type UserRole =
   | "super-admin"
@@ -47,12 +46,34 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
 
+  // Config status
+  isConfigValid: boolean;
+
   // Methods
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
   checkUserRole: () => Promise<void>;
   refreshUserData: () => Promise<void>;
 }
+
+// ─── Ethereum Window Type ───────────────────────────────────────
+
+interface EthereumProvider {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  on: (event: string, handler: (...args: unknown[]) => void) => void;
+  removeListener: (
+    event: string,
+    handler: (...args: unknown[]) => void
+  ) => void;
+}
+
+declare global {
+  interface Window {
+    ethereum?: EthereumProvider;
+  }
+}
+
+// ─── Context ────────────────────────────────────────────────────
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -64,6 +85,8 @@ export const useAuth = () => {
   return context;
 };
 
+// ─── Provider ───────────────────────────────────────────────────
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -74,9 +97,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { valid: isConfigValid } = validateConfig();
   const router = useRouter();
 
-  // Cookie management for middleware
+  // ── Cookie helpers (for middleware route guarding) ─────────
   const setCookie = useCallback(
     (name: string, value: string, days: number = 7) => {
       const expires = new Date();
@@ -90,43 +114,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
   }, []);
 
-  // Initialize provider and check existing connection
-  const initializeProvider = useCallback(async () => {
-    if (typeof window !== "undefined" && window.ethereum) {
-      try {
-        const browserProvider = new ethers.BrowserProvider(window.ethereum);
-        setProvider(browserProvider);
-
-        // Check if already connected
-        const accounts = await window.ethereum.request({
-          method: "eth_accounts",
-        });
-        if (accounts.length > 0) {
-          setAddress(accounts[0]);
-          setIsConnected(true);
-          setCookie("wallet-connected", "true");
-          await checkUserRole(accounts[0], browserProvider);
-        }
-      } catch (error) {
-        console.error("Error initializing provider:", error);
-        setError("Failed to initialize Web3 provider");
-      }
-    } else {
-      setError(
-        "MetaMask not detected. Please install MetaMask to use this application."
-      );
-    }
-    setIsLoading(false);
-  }, []);
-
-  // Check user role from smart contract
+  // ── Role checking (uses services layer) ───────────────────
   const checkUserRole = useCallback(
-    async (userAddress?: string, providerInstance?: ethers.BrowserProvider) => {
+    async (
+      userAddress?: string,
+      providerInstance?: ethers.BrowserProvider
+    ) => {
       const targetAddress = userAddress || address;
-      const targetProvider = providerInstance || provider;
-
-      if (!targetAddress || !targetProvider || !IDENTITY_REGISTRY_ADDRESS) {
-        console.warn("Missing requirements for role check");
+      if (!targetAddress || !isConfigValid) {
+        console.warn(
+          "Cannot check role: missing address or contract config"
+        );
         return;
       }
 
@@ -134,14 +132,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setError(null);
 
       try {
-        const contract = new ethers.Contract(
-          IDENTITY_REGISTRY_ADDRESS,
-          IDENTITY_REGISTRY_ABI,
-          targetProvider
-        );
-
-        // Check if user is super admin (owner)
-        const owner = await contract.owner();
+        // 1. Check if super admin (contract owner)
+        const owner = await getOwner();
         if (targetAddress.toLowerCase() === owner.toLowerCase()) {
           const userData: User = {
             address: targetAddress,
@@ -151,13 +143,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(userData);
           setCookie("user-role", "super-admin");
           setCookie("user-approved", "true");
-          redirectToRolePage("super-admin");
           return;
         }
 
-        // Check if user is admin
-        const adminData = await contract.admins(targetAddress);
-        if (adminData.exists && adminData.isAdmin) {
+        // 2. Check if admin
+        const adminStatus = await checkIsAdmin(targetAddress);
+        if (adminStatus) {
           const userData: User = {
             address: targetAddress,
             role: "admin",
@@ -166,12 +157,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(userData);
           setCookie("user-role", "admin");
           setCookie("user-approved", "true");
-          redirectToRolePage("admin");
           return;
         }
 
-        // Check if user is higher authority
-        const authorityData = await contract.higherAuthorities(targetAddress);
+        // 3. Check if higher authority
+        const authorityData = await getHigherAuthority(targetAddress);
         if (authorityData.exists) {
           const userData: User = {
             address: targetAddress,
@@ -182,12 +172,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(userData);
           setCookie("user-role", "higher-authority");
           setCookie("user-approved", authorityData.isApproved.toString());
-          redirectToRolePage("higher-authority", authorityData.isApproved);
           return;
         }
 
-        // Check if user is institute
-        const instituteData = await contract.institutes(targetAddress);
+        // 4. Check if institute
+        const instituteData = await getInstitute(targetAddress);
         if (instituteData.exists) {
           const userData: User = {
             address: targetAddress,
@@ -198,11 +187,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           setUser(userData);
           setCookie("user-role", "institute");
           setCookie("user-approved", instituteData.isApproved.toString());
-          redirectToRolePage("institute", instituteData.isApproved);
           return;
         }
 
-        // User is not registered in any role
+        // 5. Not registered
         const userData: User = {
           address: targetAddress,
           role: "unregistered",
@@ -211,12 +199,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(userData);
         setCookie("user-role", "unregistered");
         setCookie("user-approved", "false");
-        redirectToRolePage("unregistered");
-      } catch (error) {
-        console.error("Error checking user role:", error);
-        setError("Failed to verify user role. Please try again.");
+      } catch (err) {
+        console.error("Error checking user role:", err);
+        setError("Failed to verify user role. Please check your network connection.");
 
-        // Fallback to regular user
+        // Fallback: set as generic user so the app doesn't break
         const userData: User = {
           address: targetAddress,
           role: "user",
@@ -229,44 +216,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsLoading(false);
       }
     },
-    [address, provider]
+    [address, isConfigValid, setCookie]
   );
 
-  // Redirect based on user role
-  const redirectToRolePage = (role: UserRole, isApproved: boolean = true) => {
-    const currentPath = window.location.pathname;
+  // ── Initialize: check for existing wallet connection ──────
+  const initializeProvider = useCallback(async () => {
+    if (typeof window !== "undefined" && window.ethereum) {
+      try {
+        const browserProvider = new ethers.BrowserProvider(window.ethereum);
+        setProvider(browserProvider);
 
-    // Don't redirect if already on the correct page
-    const rolePages: Record<UserRole, string> = {
-      "super-admin": "/admin",
-      admin: "/admin",
-      "higher-authority": "/higher-authority",
-      institute: "/institute",
-      unregistered: "/register",
-      user: "/verify",
-    };
+        // Check if already connected (no popup)
+        const accounts = (await window.ethereum.request({
+          method: "eth_accounts",
+        })) as string[];
 
-    const targetPage = rolePages[role];
-
-    // Only redirect if user is not on homepage and not on the target page
-    // This prevents unnecessary redirects that cause blank pages
-    if (currentPath === "/" || currentPath === targetPage) {
-      return;
+        if (accounts.length > 0) {
+          setAddress(accounts[0]);
+          setIsConnected(true);
+          setCookie("wallet-connected", "true");
+          await checkUserRole(accounts[0], browserProvider);
+        }
+      } catch (err) {
+        console.error("Error initializing provider:", err);
+        setError("Failed to initialize Web3 provider");
+      }
     }
+    // No MetaMask is not an error — user just hasn't installed it
+    setIsLoading(false);
+  }, [checkUserRole, setCookie]);
 
-    // For pending approvals, show appropriate waiting/status page
-    if (!isApproved && (role === "higher-authority" || role === "institute")) {
-      router.push(`${targetPage}?status=pending`);
-      return;
-    }
-
-    router.push(targetPage);
-  };
-
-  // Connect wallet
+  // ── Connect wallet ────────────────────────────────────────
   const connectWallet = async () => {
     if (!window.ethereum) {
-      setError("MetaMask not detected. Please install MetaMask to continue.");
+      setError(
+        "MetaMask not detected. Please install MetaMask to continue."
+      );
       return;
     }
 
@@ -274,27 +259,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setError(null);
 
     try {
-      // First ensure we have a provider
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
       setProvider(browserProvider);
 
-      // Request account access
-      const accounts = await window.ethereum.request({
+      // Request account access (shows MetaMask popup)
+      const accounts = (await window.ethereum.request({
         method: "eth_requestAccounts",
-      });
+      })) as string[];
 
       if (accounts.length > 0) {
         const userAddress = accounts[0];
         setAddress(userAddress);
         setIsConnected(true);
         setCookie("wallet-connected", "true");
-
         await checkUserRole(userAddress, browserProvider);
       } else {
         setError("No accounts found. Please check your wallet connection.");
       }
-    } catch (error: any) {
-      console.error("Error connecting wallet:", error);
+    } catch (err: unknown) {
+      console.error("Error connecting wallet:", err);
+      const error = err as { code?: number };
       if (error.code === 4001) {
         setError("Connection request was rejected. Please try again.");
       } else if (error.code === -32002) {
@@ -303,7 +287,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       } else {
         setError(
-          "Failed to connect wallet. Please ensure MetaMask is unlocked and try again."
+          "Failed to connect wallet. Please ensure MetaMask is unlocked."
         );
       }
     } finally {
@@ -311,89 +295,74 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // Disconnect wallet
+  // ── Disconnect wallet ─────────────────────────────────────
   const disconnectWallet = () => {
     setIsConnected(false);
     setAddress(null);
     setUser(null);
     setError(null);
 
-    // Clear cookies
     deleteCookie("wallet-connected");
     deleteCookie("user-role");
     deleteCookie("user-approved");
 
-    // Actually disconnect from MetaMask if possible
-    if (window.ethereum && window.ethereum.selectedAddress) {
-      // Some wallets support programmatic disconnection
-      if (window.ethereum.disconnect) {
-        window.ethereum.disconnect();
-      }
-      // Alternative: Clear the connection by requesting account access with empty array
-      // This effectively "disconnects" by not allowing any accounts
-      window.ethereum
-        .request({
-          method: "wallet_requestPermissions",
-          params: [{ eth_accounts: {} }],
-        })
-        .catch(() => {
-          // Ignore errors - user might cancel the permission request
-          console.log("Wallet disconnect completed");
-        });
-    }
-
     router.push("/");
   };
 
-  // Refresh user data
+  // ── Refresh user data ─────────────────────────────────────
   const refreshUserData = async () => {
-    if (address && provider) {
+    if (address) {
       await checkUserRole();
     }
   };
 
-  // Handle account changes
+  // ── Handle account/chain changes ──────────────────────────
   const handleAccountsChanged = useCallback(
-    (accounts: string[]) => {
-      if (accounts.length === 0) {
+    (accounts: unknown) => {
+      const accts = accounts as string[];
+      if (accts.length === 0) {
         disconnectWallet();
-      } else if (accounts[0] !== address) {
-        setAddress(accounts[0]);
+      } else if (accts[0] !== address) {
+        setAddress(accts[0]);
         setIsConnected(true);
         setCookie("wallet-connected", "true");
-        if (provider) {
-          checkUserRole(accounts[0], provider);
-        }
+        checkUserRole(accts[0]);
       }
     },
-    [address, provider, checkUserRole, setCookie]
+    [address, checkUserRole, setCookie]
   );
 
-  // Handle chain changes
   const handleChainChanged = useCallback(() => {
-    // Reload the page when chain changes
+    // Reload page when chain changes so provider re-initializes
     window.location.reload();
   }, []);
 
+  // ── Effects ───────────────────────────────────────────────
   useEffect(() => {
     initializeProvider();
   }, [initializeProvider]);
 
   useEffect(() => {
-    if (window.ethereum) {
+    if (typeof window !== "undefined" && window.ethereum) {
       window.ethereum.on("accountsChanged", handleAccountsChanged);
       window.ethereum.on("chainChanged", handleChainChanged);
 
       return () => {
-        window.ethereum.removeListener(
-          "accountsChanged",
-          handleAccountsChanged
-        );
-        window.ethereum.removeListener("chainChanged", handleChainChanged);
+        if (window.ethereum) {
+          window.ethereum.removeListener(
+            "accountsChanged",
+            handleAccountsChanged
+          );
+          window.ethereum.removeListener(
+            "chainChanged",
+            handleChainChanged
+          );
+        }
       };
     }
   }, [handleAccountsChanged, handleChainChanged]);
 
+  // ── Context value ─────────────────────────────────────────
   const value: AuthContextType = {
     isConnected,
     address,
@@ -401,6 +370,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     user,
     isLoading,
     error,
+    isConfigValid,
     connectWallet,
     disconnectWallet,
     checkUserRole: () => checkUserRole(),

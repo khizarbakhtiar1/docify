@@ -16,14 +16,14 @@ const AUTH_REQUIRED_ROUTES = [
   "/document-submission",
 ];
 
-// Public routes that don't need authentication
+// Public routes — no wallet connection required.
+// Authentication is wallet-based (no separate login page).
 const PUBLIC_ROUTES = [
   "/",
   "/overview",
   "/contact",
   "/plans",
   "/verify",
-  "/login",
   "/register",
 ];
 
@@ -69,7 +69,7 @@ export function middleware(request: NextRequest) {
       pathname.startsWith(route)
     )?.[1];
 
-    if (requiredRoles && userRole && !requiredRoles.includes(userRole)) {
+    if (requiredRoles && userRole && !(requiredRoles as readonly string[]).includes(userRole)) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       url.searchParams.set("access-denied", "true");

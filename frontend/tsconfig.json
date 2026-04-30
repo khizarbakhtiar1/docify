@@ -25,21 +25,9 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "src/components/RegistrationForm.tsx",
-    "src/components/Body.tsx",
-    "src/components/Body.tsx",
-    "src/hooks/useMetamaskConnection.js",
-    "src/components/component/wallet-connect.jsx",
-    "src/components/WalletConnectButton.jsx",
-    "src/components/component/DocumentSubmissionForm.jsx",
-    "src/app/institute/InstituteDashboard.jsx",
-    "src/app/admin/page.jsx",
-    "src/app/admin/admin-dashboard.jsx",
-    "src/components/WalletConnect.jsx",
-    "src/components/pricing.jsx",
-    "src/components/pricing.jsx",
-    "src/app/login/LoginForm.jsx"
+    "**/*.js",
+    "**/*.jsx",
+    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

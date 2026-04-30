@@ -84,11 +84,11 @@ export function Register() {
     setIsLoading(true);
     
     try {
-      // Simulate registration process
+      // TODO: Will be replaced with actual blockchain calls in Step 4
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       alert(`Registration successful! Welcome to Docify as a ${activeTab === "institute" ? "Institute" : "Higher Authority"}.`);
-      window.location.href = "/login";
+      window.location.href = "/";
     } catch (error) {
       console.error("Registration error:", error);
       alert("Registration failed. Please try again.");
@@ -370,12 +370,12 @@ export function Register() {
 
           <div className="text-center mt-8 animate-slide-up">
             <p className="text-gray-600">
-              Already have an account?{" "}
+              Already registered?{" "}
               <Link 
-                href="/login" 
+                href="/" 
                 className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
               >
-                Sign in here
+                Go to Dashboard
               </Link>
             </p>
             <div className="mt-6 pt-4 border-t border-gray-200">
