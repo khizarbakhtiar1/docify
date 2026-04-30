@@ -15,7 +15,9 @@
 11. Technical Details
 12. Security Considerations
 13. Troubleshooting
-14. Conclusion
+14. Local Development Environment
+15. Testnet Deployment
+16. Conclusion
 
 ## 1. Introduction
 
@@ -146,7 +148,40 @@ For detailed function descriptions, refer to the individual contract documentati
 - Approval Delays: Higher Authority approvals require multiple admin confirmations, which may take time.
 - Credit Purchase Problems: Double-check the ETH amount matches the selected plan.
 
-## 14. Conclusion
+## 14. Local Development Environment
+
+To run Docify locally with a simulated blockchain:
+
+1. Clone the repository and install dependencies:
+   ```bash
+   npm install
+   cd backend && npm install
+   cd ../frontend && npm install
+   cd ..
+   ```
+2. Run the development environment:
+   ```bash
+   npm run dev
+   ```
+   This will start a local Hardhat node, deploy all contracts, mock test data (including admins, authorities, institutes), export ABIs to the frontend, and start the Next.js development server. You can view the app at [http://localhost:3000](http://localhost:3000).
+
+For a detailed guide on testing with mock accounts, please refer to [DEVELOPMENT.md](./DEVELOPMENT.md).
+
+## 15. Testnet Deployment
+
+To deploy Docify to a testnet like Sepolia or Vanar:
+
+1. Configure your environment variables in `backend/.env` based on `backend/.env.example`. You will need your deployment private key, RPC URL, and block explorer API keys.
+2. Ensure you have sufficient testnet funds.
+3. Run the deployment script for your specific testnet from the root directory:
+   ```bash
+   npm run dev:deploy:sepolia
+   # or
+   npm run dev:deploy:vanar
+   ```
+   This script will deploy the core contracts, save the addresses, verify the contracts on the block explorer, and automatically create the corresponding frontend environment file (e.g., `frontend/.env.sepolia`).
+
+## 16. Conclusion
 
 The Figroma DApp provides a secure and transparent platform for document verification and credential issuance. By following this guide, users in various roles can effectively navigate and utilize the DApp's features. For any additional questions or support, please contact the DApp administrators.
 
